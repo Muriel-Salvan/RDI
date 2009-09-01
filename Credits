@@ -1,0 +1,21 @@
+= Projects used by RDI
+
+== Ruby
+* Yukihiro « matz » Matsumoto (http://www.rubyist.net/~matz/)
+* http://www.ruby-lang.org/
+* Thanks a lot Matz for this truly wonderful language !
+
+== RubyGems
+* Paul Duncan <pabs@pablotron.org>
+* http://rubygems.org/
+* Used to automatically download Gem dependencies
+
+== WxRuby
+* Sean Long (http://rubyforge.org/users/seanlong/)
+* Alex Fenton (http://rubyforge.org/users/brokentoy/)
+* http://wxruby.rubyforge.org
+* Used as the GUI framework
+
+= People that helped a lot in developing RDI
+
+* Alex Fenton (http://rubyforge.org/users/brokentoy/) for his unvaluable help in better understanding WxRuby and WxWidgets

@@ -72,10 +72,12 @@ module RDI
         def testEnsureDep
           setupAppDir do
             lDesc = getSimpleDesc
-            lError, lCMApplied = @Installer.ensureDependencies( [ lDesc ], {
+            lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
               :AutoInstall => DEST_LOCAL
             } )
             assert_equal(nil, lError)
+            assert_equal([], lIgnoredDeps)
+            assert_equal([], lUnresolvedDeps)
             # Get the corresponding local folder
             iInstallerName, iInstallerContent = lDesc.Installers[0]
             lInstallLocation = nil
@@ -106,7 +108,7 @@ module RDI
         def testEnsureDepWithExistingContextModifier
           setupAppDir do
             lDesc = getSimpleDesc
-            lError, lCMApplied = @Installer.ensureDependencies( [ lDesc ], {
+            lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
               :AutoInstall => DEST_LOCAL,
               :PossibleContextModifiers => {
                 'DummyBinary' => [
@@ -117,6 +119,8 @@ module RDI
               }
             } )
             assert_equal(nil, lError)
+            assert_equal([], lIgnoredDeps)
+            assert_equal([], lUnresolvedDeps)
             # If RDI has correctly found it, there are 2 things that can prove it:
             # 1. The system path should have "#{@RepositoryDir}/Binaries"
             @Installer.send(:accessPlugin, 'Testers', 'Binaries') do |iPlugin|

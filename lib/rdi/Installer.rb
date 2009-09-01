@@ -86,10 +86,14 @@ module RDI
     # ** *:PossibleContextModifiers* (<em>map<String,list<list<[String,Object]>>></em>): The list of possible context modifiers sets to try, per dependency ID
     # Return:
     # * _Exception_: The error, or nil in case of success
-    # * <em>map<String,list<[String,Object]>></em>: The list of context modifiers that have been applied to resolve the dependencies, per dependency ID
+    # * <em>map<String,list<[String,Object]>></em>: The list of context modifiers that have been applied to resolve the dependencies, per dependency ID (can be inconsistent in case of error)
+    # * <em>list<DependencyDescription></em>: The list of dependencies that were deliberately ignored (can be inconsistent in case of error)
+    # * <em>list<DependencyDescription></em>: The list of dependencies that could not be resolved (can be inconsistent in case of error)
     def ensureDependencies(iDepDescList, iParameters = {})
       rError = nil
       rAppliedContextModifiers = {}
+      rIgnoredDeps = []
+      rUnresolvedDeps = []
 
       lAutoInstall = iParameters[:AutoInstall]
       lPossibleContextModifiers = iParameters[:PossibleContextModifiers]
@@ -112,7 +116,24 @@ module RDI
         # If we ask for auto-installation, go on
         if (lAutoInstall == nil)
           # Ask the user what to do with those missing dependencies
-          # TODO
+          lDependenciesToInstall, rIgnoredDeps = askUserForMissingDeps(lMissingDependencies, rAppliedContextModifiers)
+          # Install the dependencies marked to be installed
+          lDependenciesToInstall.each do |iInstallDepInfo|
+            iDepDesc, iIdxInstaller, iLocation = iInstallDepInfo
+            lInstallEnv = {}
+            rError = installDependency(iDepDesc, iIdxInstaller, iLocation, lInstallEnv)
+            # Get what has been modified in the context
+            rAppliedContextModifiers[iDepDesc.ID] = lInstallEnv[:ContextModifiers]
+            # If an error occurred, cancel
+            if (rError != nil)
+              break
+            end
+            # Test if it was installed correctly
+            if (!testDependency(iDepDesc))
+              # Still missing
+              rUnresolvedDeps << iDepDesc
+            end
+          end
         else
           lMissingDependencies.each do |iDepDesc|
             # Try to find an installer and a location for the lAutoInstall value
@@ -143,6 +164,11 @@ module RDI
               rError = installDependency(iDepDesc, lIdxInstaller, lLocation, lInstallEnv)
               # Get what has been modified in the context
               rAppliedContextModifiers[iDepDesc.ID] = lInstallEnv[:ContextModifiers]
+              # Test if it was installed correctly
+              if (!testDependency(iDepDesc))
+                # Still missing
+                rUnresolvedDeps << iDepDesc
+              end
             end
             if (rError != nil)
               # An error occurred: cancel
@@ -152,7 +178,7 @@ module RDI
         end
       end
 
-      return rError, rAppliedContextModifiers
+      return rError, rAppliedContextModifiers, rIgnoredDeps, rUnresolvedDeps
     end
 
     # Check if a dependency is ok
@@ -299,6 +325,23 @@ module RDI
       end
 
       return rMissingDeps
+    end
+
+    # Ask the user about missing dependencies.
+    #
+    # Parameters:
+    # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
+    # * *ioAppliedContextModifiers* (<em>map<String,list<[String,Object]>></em>): The list of context modifiers that have been applied to resolve the dependencies, per dependency ID
+    # Return:
+    # * <em>list<[DependencyDescription,Integer,Object]></em>: The list of dependencies to install, along with the index of installer and their respective install location
+    # * <em>list<DependencyDescription></em>: The list of dependencies that the user chose to ignore deliberately
+    def askUserForMissingDeps(iMissingDependencies, ioAppliedContextModifiers)
+      rDepsToInstall = []
+      rIgnoreDeps = []
+
+
+
+      return rDepsToInstall, rIgnoreDeps
     end
 
     # == Regression API ==

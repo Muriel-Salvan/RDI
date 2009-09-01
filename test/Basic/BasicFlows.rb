@@ -72,9 +72,10 @@ module RDI
         def testEnsureDep
           setupAppDir do
             lDesc = getSimpleDesc
-            @Installer.ensureDependencies( [ lDesc ], {
+            lError, lCMApplied = @Installer.ensureDependencies( [ lDesc ], {
               :AutoInstall => DEST_LOCAL
             } )
+            assert_equal(nil, lError)
             # Get the corresponding local folder
             iInstallerName, iInstallerContent = lDesc.Installers[0]
             lInstallLocation = nil
@@ -90,6 +91,14 @@ module RDI
             end
             assert(lInstallLocation != nil)
             assert_equal(true, File.exists?("#{lInstallLocation}/DummyBinary"))
+            assert_equal(
+              {
+                'DummyBinary' => [
+                  [ 'SystemPath', lInstallLocation ]
+                ]
+              },
+              lCMApplied
+            )
           end
         end
 
@@ -97,7 +106,7 @@ module RDI
         def testEnsureDepWithExistingContextModifier
           setupAppDir do
             lDesc = getSimpleDesc
-            @Installer.ensureDependencies( [ lDesc ], {
+            lError, lCMApplied = @Installer.ensureDependencies( [ lDesc ], {
               :AutoInstall => DEST_LOCAL,
               :PossibleContextModifiers => {
                 'DummyBinary' => [
@@ -107,6 +116,7 @@ module RDI
                 ]
               }
             } )
+            assert_equal(nil, lError)
             # If RDI has correctly found it, there are 2 things that can prove it:
             # 1. The system path should have "#{@RepositoryDir}/Binaries"
             @Installer.send(:accessPlugin, 'Testers', 'Binaries') do |iPlugin|
@@ -127,6 +137,14 @@ module RDI
             end
             assert(lInstallLocation != nil)
             assert_equal(false, File.exists?("#{lInstallLocation}/DummyBinary"))
+            assert_equal(
+              {
+                'DummyBinary' => [
+                  [ 'SystemPath', "#{@RepositoryDir}/Binaries" ]
+                ]
+              },
+              lCMApplied
+            )
           end
         end
 

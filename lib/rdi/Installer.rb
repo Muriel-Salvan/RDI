@@ -86,8 +86,10 @@ module RDI
     # ** *:PossibleContextModifiers* (<em>map<String,list<list<[String,Object]>>></em>): The list of possible context modifiers sets to try, per dependency ID
     # Return:
     # * _Exception_: The error, or nil in case of success
+    # * <em>map<String,list<[String,Object]>></em>: The list of context modifiers that have been applied to resolve the dependencies, per dependency ID
     def ensureDependencies(iDepDescList, iParameters = {})
       rError = nil
+      rAppliedContextModifiers = {}
 
       lAutoInstall = iParameters[:AutoInstall]
       lPossibleContextModifiers = iParameters[:PossibleContextModifiers]
@@ -105,7 +107,7 @@ module RDI
         if (lPossibleContextModifiers == nil)
           lMissingDependencies = lDepsToResolve
         else
-          lMissingDependencies = getMissingDeps(lDepsToResolve, lPossibleContextModifiers)
+          lMissingDependencies = getMissingDeps(lDepsToResolve, lPossibleContextModifiers, rAppliedContextModifiers)
         end
         # If we ask for auto-installation, go on
         if (lAutoInstall == nil)
@@ -137,7 +139,10 @@ module RDI
               # We were unable to find a correct default location for lAutoInstall
               rError = RuntimeError.new("Unable to find a default location for #{lAutoInstall}.")
             else
-              rError = installDependency(iDepDesc, lIdxInstaller, lLocation)
+              lInstallEnv = {}
+              rError = installDependency(iDepDesc, lIdxInstaller, lLocation, lInstallEnv)
+              # Get what has been modified in the context
+              rAppliedContextModifiers[iDepDesc.ID] = lInstallEnv[:ContextModifiers]
             end
             if (rError != nil)
               # An error occurred: cancel
@@ -147,7 +152,7 @@ module RDI
         end
       end
 
-      return rError
+      return rError, rAppliedContextModifiers
     end
 
     # Check if a dependency is ok
@@ -242,9 +247,10 @@ module RDI
     # Parameters:
     # * *iDepsToResolve* (<em>list<DependencyDescription></em>): The list of dependencies to resolve
     # * *iPossibleContextModifiers* (<em>map<String,list<list<[String,Object]>>></em>): The list of possible context modifiers sets to try, per dependency ID
+    # * *ioAppliedContextModifiers* (<em>map<String,list<[String,Object]>></em>): The list of context modifiers that have been applied to resolve the dependencies, per dependency ID
     # Return:
     # * <em>list<DependencyDescription></em>: The list of dependencies that are still missing
-    def getMissingDeps(iDepsToResolve, iPossibleContextModifiers)
+    def getMissingDeps(iDepsToResolve, iPossibleContextModifiers, ioAppliedContextModifiers)
       rMissingDeps = []
 
       # We might have some install environments to try
@@ -272,6 +278,7 @@ module RDI
               lDepResolved = testDependency(iDepDesc)
               # If we found it, it's ok
               if (lDepResolved)
+                ioAppliedContextModifiers[iDepDesc.ID] = lAppliedCMs
                 break
               else
                 # Rollback those context modifications as they were useless

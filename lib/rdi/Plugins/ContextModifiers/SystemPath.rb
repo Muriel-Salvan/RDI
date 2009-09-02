@@ -7,7 +7,15 @@ module RDI
 
   module ContextModifiers
 
-    class SystemPath
+    class SystemPath < RDI::Model::ContextModifier
+
+      # Get the name of classes that provide selection facility for locations
+      #
+      # Return:
+      # * _String_: The name of the LocationSelector class
+      def getLocationSelectorName
+        return 'Directory'
+      end
 
       # Transform a given content based on an installation environment.
       # This is called to pass some specific installation parameters to a more generic content (useful for installation directories for example)

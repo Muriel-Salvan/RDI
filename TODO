@@ -5,6 +5,8 @@
 
 * Testing
 ** GUI regression
+** Regression should test automatically for each Installer type that depending on the location of the install (Local, System, User...), only the correct directories are altered.
+** Regression should warn when plugins don't have regression test cases
 
 * Development
 ** In the dependenciesloader dialog, test internet connection before proposing installing Gems and Dlls.

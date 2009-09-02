@@ -80,8 +80,15 @@ module RDI
       # Test that the API is correctly defined
       def testAPI
         setupAppDir do
-          @Installer.send(:accessPlugin, 'Testers', @TesterPluginName) do |ioPlugin|
+          @Installer.accessPlugin('Testers', @TesterPluginName) do |ioPlugin|
+            assert(ioPlugin.is_a?(RDI::Model::Tester))
             assert(ioPlugin.respond_to?(:isContentResolved?))
+            assert(ioPlugin.respond_to?(:getAffectingContextModifiers))
+            # Test that returned Affecting Context Modifiers are valid.
+            lAvailableCMs = @Installer.getPluginNames('ContextModifiers')
+            ioPlugin.getAffectingContextModifiers.each do |iCMName|
+              assert_equal(true, lAvailableCMs.include?(iCMName))
+            end
           end
         end
       end
@@ -89,7 +96,7 @@ module RDI
       # Test that the dependency does not exist in an empty project
       def testMissingDep
         setupAppDir do
-          @Installer.send(:accessPlugin, 'Testers', @TesterPluginName) do |ioPlugin|
+          @Installer.accessPlugin('Testers', @TesterPluginName) do |ioPlugin|
             lContent = getTestContent
             assert_equal(false, ioPlugin.isContentResolved?(lContent))
           end
@@ -99,7 +106,7 @@ module RDI
       # Test that once installed, it detects the dependency as being present
       def testExistingDep
         setupAppDir do
-          @Installer.send(:accessPlugin, 'Testers', @TesterPluginName) do |ioPlugin|
+          @Installer.accessPlugin('Testers', @TesterPluginName) do |ioPlugin|
             lContent = getTestContent
             installTestContent
             assert_equal(true, ioPlugin.isContentResolved?(lContent))
@@ -113,7 +120,6 @@ module RDI
     # Module defining methods that test a given Installer
     # The setup of classes including this module should define
     #  @InstallerPluginName
-    #  getOtherLocationChooser
     #  getTestContent
     #  verifyInstalledContent
     #  uninstallTestContent
@@ -123,18 +129,25 @@ module RDI
       # Test that the API is correctly defined
       def testAPI
         setupAppDir do
-          @Installer.send(:accessPlugin, 'Installers', @InstallerPluginName) do |ioPlugin|
+          @Installer.accessPlugin('Installers', @InstallerPluginName) do |ioPlugin|
+            assert(ioPlugin.is_a?(RDI::Model::Installer))
             assert(ioPlugin.respond_to?(:getPossibleDestinations))
             assert(ioPlugin.respond_to?(:installDependency))
             lDestinations = ioPlugin.getPossibleDestinations
             assert(lDestinations.is_a?(Array))
+            assert(lDestinations.size > 0)
+            assert(lDestinations[0][0] != DEST_OTHER)
             lDestinations.each do |iDestination|
               assert(iDestination.is_a?(Array))
               assert(iDestination.size == 2)
               iFlavour, iLocation = iDestination
               assert(iFlavour.is_a?(Fixnum))
               if (iFlavour == DEST_OTHER)
-                assert_equal(getOtherLocationChooser, iLocation)
+                # Check that this selector location name exists for every GUI we have
+                assert(iLocation.is_a?(String))
+                @Installer.getPluginNames('Views').each do |iViewName|
+                  assert(@Installer.getPluginNames("LocationSelectors_#{iViewName}").include?(iLocation))
+                end
               end
             end
           end
@@ -144,7 +157,7 @@ module RDI
       # Test that installing works correctly
       def testInstallDep
         setupAppDir do
-          @Installer.send(:accessPlugin, 'Installers', @InstallerPluginName) do |ioPlugin|
+          @Installer.accessPlugin('Installers', @InstallerPluginName) do |ioPlugin|
             lContent = getTestContent
             # Test installation on every possible location
             ioPlugin.getPossibleDestinations.each do |iDestination|
@@ -177,11 +190,19 @@ module RDI
       # Test that the API is correctly defined
       def testAPI
         setupAppDir do
-          @Installer.send(:accessPlugin, 'ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
+          @Installer.accessPlugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
+            assert(ioPlugin.is_a?(RDI::Model::ContextModifier))
+            assert(ioPlugin.respond_to?(:getLocationSelectorName))
             assert(ioPlugin.respond_to?(:transformContentWithInstallEnv))
             assert(ioPlugin.respond_to?(:isLocationInContext?))
             assert(ioPlugin.respond_to?(:addLocationToContext))
             assert(ioPlugin.respond_to?(:removeLocationFromContext))
+            # Check that the location selector name exists for every view we have.
+            lLocationSelectorName = ioPlugin.getLocationSelectorName
+            assert(lLocationSelectorName.is_a?(String))
+            @Installer.getPluginNames('Views').each do |iViewName|
+              assert(@Installer.getPluginNames("LocationSelectors_#{iViewName}").include?(lLocationSelectorName))
+            end
           end
         end
       end
@@ -189,7 +210,7 @@ module RDI
       # Test missing location
       def testMissingLocation
         setupAppDir do
-          @Installer.send(:accessPlugin, 'ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
+          @Installer.accessPlugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
             lLocation = getTestLocation
             assert_equal(false, ioPlugin.isLocationInContext?(lLocation))
           end
@@ -199,7 +220,7 @@ module RDI
       # Test that adding locations works correctly
       def testAddLocation
         setupAppDir do
-          @Installer.send(:accessPlugin, 'ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
+          @Installer.accessPlugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
             lLocation = getTestLocation
             assert_equal(false, ioPlugin.isLocationInContext?(lLocation))
             ioPlugin.addLocationToContext(lLocation)
@@ -211,7 +232,7 @@ module RDI
       # Test that removing locations works correctly
       def testRemoveLocation
         setupAppDir do
-          @Installer.send(:accessPlugin, 'ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
+          @Installer.accessPlugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
             lLocation = getTestLocation
             assert_equal(false, ioPlugin.isLocationInContext?(lLocation))
             ioPlugin.addLocationToContext(lLocation)

@@ -7,7 +7,7 @@ module RDI
 
   module ContextModifiers
 
-    class GemPath
+    class GemPath < RDI::Model::ContextModifier
 
       # To get the complete list of loadable paths through RubyGems:
       # > Gem.all_loaded_paths
@@ -26,6 +26,14 @@ module RDI
       # To remove a Gems repository:
       # > Gem.clear_paths
       # Then read others than the one we want to remove
+
+      # Get the name of classes that provide selection facility for locations
+      #
+      # Return:
+      # * _String_: The name of the LocationSelector class
+      def getLocationSelectorName
+        return 'Directory'
+      end
 
       # Transform a given content based on an installation environment.
       # This is called to pass some specific installation parameters to a more generic content (useful for installation directories for example)

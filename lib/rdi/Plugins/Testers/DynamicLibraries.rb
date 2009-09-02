@@ -8,7 +8,16 @@ module RDI
   module Testers
 
     # Test that some DLLs are accessible
-    class DynamicLibraries
+    class DynamicLibraries < RDI::Model::Tester
+
+      # Give the name of possible ContextModifiers that might change the resolution of this Tester.
+      # This is used to know what context modifiers the user can use to resolve dependencies without having to install.
+      #
+      # Return:
+      # * <em>list<String></em>: The list of ContextModifiers names
+      def getAffectingContextModifiers
+        return [ 'LibraryPath' ]
+      end
 
       # Test if a given content is resolved
       #

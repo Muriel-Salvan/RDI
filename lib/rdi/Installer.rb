@@ -69,13 +69,23 @@ module RDI
       # Get the RDI root directory for libraries
       lRDILibDir = File.dirname(__FILE__)
       # Get all plugins
-      @Plugins.parsePluginsFromDir('ContextModifiers', "#{lRDILibDir}/Plugins/ContextModifiers", 'RDI::ContextModifiers')
+      @Plugins.parsePluginsFromDir('ContextModifiers', "#{lRDILibDir}/Plugins/ContextModifiers", 'RDI::ContextModifiers') do |ioPlugin|
+        # Cache some attributes
+        ioPlugin.LocationSelectorName = ioPlugin.getLocationSelectorName
+      end
       @Plugins.parsePluginsFromDir('Installers', "#{lRDILibDir}/Plugins/Installers", 'RDI::Installers') do |ioPlugin|
         ioPlugin.Installer = self
+        # Cache some attributes
         ioPlugin.PossibleDestinations = ioPlugin.getPossibleDestinations
       end
-      @Plugins.parsePluginsFromDir('Testers', "#{lRDILibDir}/Plugins/Testers", 'RDI::Testers')
+      @Plugins.parsePluginsFromDir('Testers', "#{lRDILibDir}/Plugins/Testers", 'RDI::Testers') do |ioPlugin|
+        # Cache some attributes
+        ioPlugin.AffectingContextModifiers = ioPlugin.getAffectingContextModifiers
+      end
       @Plugins.parsePluginsFromDir('Views', "#{lRDILibDir}/Plugins/Views", 'RDI::Views')
+      @Plugins.getPluginNames('Views').each do |iViewName|
+        @Plugins.parsePluginsFromDir("LocationSelectors_#{iViewName}", "#{lRDILibDir}/Plugins/Views/#{iViewName}/LocationSelectors", "RDI::Views::LocationSelectors::#{iViewName}")
+      end
     end
 
     # The main method: ensure that a dependency is accessible
@@ -267,6 +277,35 @@ module RDI
       return rError
     end
 
+    # Get access to one of RDI's plugins.
+    # An exception is thrown if the plugin does not exist.
+    # Used by:
+    # * Regression
+    # * Views
+    #
+    # Parameters:
+    # * *iCategoryName* (_String_): Category of the plugin to access
+    # * *iPluginName* (_String_): Name of the plugin to access
+    # * *CodeBlock*: The code called when the plugin is found:
+    # ** *ioPlugin* (_Object_): The corresponding plugin
+    def accessPlugin(iCategoryName, iPluginName)
+      @Plugins.accessPlugin(iCategoryName, iPluginName, false, self) do |ioPlugin|
+        yield(ioPlugin)
+      end
+    end
+
+    # Get lis of plugins for a given category.
+    # Used by:
+    # * Regression
+    #
+    # Parameters:
+    # * *iCategoryName* (_String_): Category of the plugin to access
+    # Return:
+    # * <em>list<String></em>: List of plugin names
+    def getPluginNames(iCategoryName)
+      return @Plugins.getPluginNames(iCategoryName)
+    end
+
     # == Private API ==
 
     private
@@ -357,29 +396,47 @@ module RDI
         # Set all views as being preferred
         lViewsList = @Plugins.getPluginNames('Views')
       end
-      # Now we try to select 1 view that is accessible without any dependency installation
-      lViewsList.each do |iViewName|
-        # TODO accessPlugin
+      if (lViewsList.empty?)
+        logBug 'No view was accessible among plugins. Please check your Plugin/Views directory.'
+      else
+        # Now we try to select 1 view that is accessible without any dependency installation
+        lPlugin = nil
+        lViewsList.each do |iViewName|
+          lPlugin = @Plugins.getPluginInstance('Views', iViewName, true, self)
+          if (lPlugin != nil)
+            # Found one
+            break
+          end
+        end
+        if (lPlugin == nil)
+          # Now we try to install them
+          lViewsList.each do |iViewName|
+            lPlugin = @Plugins.getPluginInstance('Views', iViewName, false, self)
+            if (lPlugin != nil)
+              # Found one
+              break
+            end
+          end
+        end
+        if (lPlugin == nil)
+          logBug 'After trying all preferred views, we are still unable to have one.'
+        else
+          # Call it
+          rDepsToInstall, rIgnoreDeps, lContextModifiers = lPlugin.execute(self, iMissingDependencies)
+          # Apply the context modifiers and store them
+          lContextModifiers.each do |iDepID, iCMList|
+            iCMList.each do |iCMInfo|
+              iCMName, iCMContent = iCMInfo
+              accessPlugin('ContextModifiers', iCMName) do |ioPlugin|
+                ioPlugin.addLocationToContext(iCMContent)
+              end
+            end
+          end
+          ioAppliedContextModifiers.merge!(lContextModifiers)
+        end
       end
 
       return rDepsToInstall, rIgnoreDeps
-    end
-
-    # == Regression API ==
-
-    # Get access to one of RDI's plugins.
-    # An exception is thrown if the plugin does not exist.
-    # Used only for regression testing.
-    #
-    # Parameters:
-    # * *iCategoryName* (_String_): Category of the plugin to access
-    # * *iPluginName* (_String_): Name of the plugin to access
-    # * *CodeBlock*: The code called when the plugin is found:
-    # ** *ioPlugin* (_Object_): The corresponding plugin
-    def accessPlugin(iCategoryName, iPluginName)
-      @Plugins.accessPlugin(iCategoryName, iPluginName, false, self) do |ioPlugin|
-        yield(ioPlugin)
-      end
     end
 
   end

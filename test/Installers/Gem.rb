@@ -30,14 +30,6 @@ module RDI
           end
         end
 
-        # Get the other location's chooser
-        #
-        # Return:
-        # * _Object_: The other location chooser
-        def getOtherLocationChooser
-          return 'Directory'
-        end
-
         # Get a test content
         #
         # Return:

@@ -12,7 +12,7 @@ module RDI
       # Get the list of possible destinations
       #
       # Return:
-      # * <em>list<[Integer,Object]></em>: The list of possible destinations and their corresponding installation location
+      # * <em>list<[Integer,Object]></em>: The list of possible destinations and their corresponding installation location (or location selector name for DEST_OTHER)
       def getPossibleDestinations
         return [
           [ DEST_LOCAL, @Installer.ExtDir ],

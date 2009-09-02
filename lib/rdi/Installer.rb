@@ -75,6 +75,7 @@ module RDI
         ioPlugin.PossibleDestinations = ioPlugin.getPossibleDestinations
       end
       @Plugins.parsePluginsFromDir('Testers', "#{lRDILibDir}/Plugins/Testers", 'RDI::Testers')
+      @Plugins.parsePluginsFromDir('Views', "#{lRDILibDir}/Plugins/Views", 'RDI::Views')
     end
 
     # The main method: ensure that a dependency is accessible
@@ -83,7 +84,8 @@ module RDI
     # * *iDepDescList* (<em>list<DependencyDescription></em>): The list of dependencies's description to ensure
     # * *iParameters* (<em>map<Symbol,Object></em>): Additional parameters:
     # ** *:AutoInstall* (_Integer_): When set to one of the DEST_* constants, RDI installs automatically to a location flagged with this constant, without the need of user choice [optional = nil]
-    # ** *:PossibleContextModifiers* (<em>map<String,list<list<[String,Object]>>></em>): The list of possible context modifiers sets to try, per dependency ID
+    # ** *:PossibleContextModifiers* (<em>map<String,list<list<[String,Object]>>></em>): The list of possible context modifiers sets to try, per dependency ID [optional = nil]
+    # ** *:PreferredViews* (<em>list<String></em>): The list of preferred views [optional = nil]
     # Return:
     # * _Exception_: The error, or nil in case of success
     # * <em>map<String,list<[String,Object]>></em>: The list of context modifiers that have been applied to resolve the dependencies, per dependency ID (can be inconsistent in case of error)
@@ -97,6 +99,7 @@ module RDI
 
       lAutoInstall = iParameters[:AutoInstall]
       lPossibleContextModifiers = iParameters[:PossibleContextModifiers]
+      lPreferredViews = iParameters[:PreferredViews]
       # First, test if the dependencies are already accessible
       lDepsToResolve = []
       iDepDescList.each do |iDepDesc|
@@ -116,7 +119,7 @@ module RDI
         # If we ask for auto-installation, go on
         if (lAutoInstall == nil)
           # Ask the user what to do with those missing dependencies
-          lDependenciesToInstall, rIgnoredDeps = askUserForMissingDeps(lMissingDependencies, rAppliedContextModifiers)
+          lDependenciesToInstall, rIgnoredDeps = askUserForMissingDeps(lMissingDependencies, rAppliedContextModifiers, lPreferredViews)
           # Install the dependencies marked to be installed
           lDependenciesToInstall.each do |iInstallDepInfo|
             iDepDesc, iIdxInstaller, iLocation = iInstallDepInfo
@@ -141,7 +144,7 @@ module RDI
             lLocation = nil
             iDepDesc.Installers.each do |iInstallerInfo|
               iInstallerName, iInstallerContent, iContextModifiersList = iInstallerInfo
-              @Plugins.accessPlugin('Installers', iInstallerName) do |iPlugin|
+              accessPlugin('Installers', iInstallerName) do |iPlugin|
                 iPlugin.PossibleDestinations.each do |iDestinationInfo|
                   iLocationType, iLocation = iDestinationInfo
                   if (iLocationType == lAutoInstall)
@@ -193,7 +196,7 @@ module RDI
       # Loop among Testers
       iDepDesc.Testers.each do |iTesterInfo|
         iTesterName, iTesterContent = iTesterInfo
-        @Plugins.accessPlugin('Testers', iTesterName) do |iPlugin|
+        accessPlugin('Testers', iTesterName) do |iPlugin|
           logDebug "Test dependency #{iTesterContent} using #{iTesterName} ..."
           rSuccess = iPlugin.isContentResolved?(iTesterContent)
           if (rSuccess)
@@ -230,7 +233,7 @@ module RDI
         rError = RuntimeError.new("Unable to get installer n.#{iIdxInstaller} in description #{iDepDesc.inspect}")
       else
         # Install it
-        @Plugins.accessPlugin('Installers', iInstallerName) do |iPlugin|
+        accessPlugin('Installers', iInstallerName) do |iPlugin|
           logDebug "Install #{iInstallerContent} in #{iLocation} using #{iInstallerName} ..."
           rError = iPlugin.installDependency(iInstallerContent, iLocation, ioInstallEnvironment)
           if (rError == nil)
@@ -246,7 +249,7 @@ module RDI
           ioInstallEnvironment[:ContextModifiers] = []
           iContextModifiersList.each do |iContextModifierInfo|
             iContextModifierName, iContextModifierContent = iContextModifierInfo
-            @Plugins.accessPlugin('ContextModifiers', iContextModifierName) do |iPlugin|
+            accessPlugin('ContextModifiers', iContextModifierName) do |iPlugin|
               # Transform the content based on the installation environment
               lContextContent = iPlugin.transformContentWithInstallEnv(iContextModifierContent, ioInstallEnvironment)
               # Check if this content is already in the context
@@ -291,7 +294,7 @@ module RDI
             lAppliedCMs = []
             iCMSetToTry.each do |iContextModifierInfo|
               iName, iContent = iContextModifierInfo
-              @Plugins.accessPlugin('ContextModifiers', iName) do |ioPlugin|
+              accessPlugin('ContextModifiers', iName) do |ioPlugin|
                 if (!ioPlugin.isLocationInContext?(iContent))
                   # We try this one.
                   ioPlugin.addLocationToContext(iContent)
@@ -310,7 +313,7 @@ module RDI
                 # Rollback those context modifications as they were useless
                 lAppliedCMs.each do |iContextModifierInfo|
                   iName, iContent = iContextModifierInfo
-                  @Plugins.accessPlugin('ContextModifiers', iName) do |ioPlugin|
+                  accessPlugin('ContextModifiers', iName) do |ioPlugin|
                     ioPlugin.removeLocationFromContext(iContent)
                   end
                 end
@@ -328,18 +331,36 @@ module RDI
     end
 
     # Ask the user about missing dependencies.
+    # This method will use a user interface to know what to do with missing dependencies.
+    # For each dependency, choices are:
+    # * Install it
+    # * Ignore it
+    # * Change the context to find it (select directory...)
+    # Views are used to ask the user for those.
+    # It is possible to specify a list of preferred views. If it is the case, RDI will try first views among this list that already have their dependencies accessible, then RDI will try to install the dependencies of the first one. It will use the first view it can.
+    # If not specified, RDI will use arbitrary the first view it can, and eventualy try to install one.
     #
     # Parameters:
     # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
     # * *ioAppliedContextModifiers* (<em>map<String,list<[String,Object]>></em>): The list of context modifiers that have been applied to resolve the dependencies, per dependency ID
+    # * *iPreferredViewsList* (<em>list<String></em>): The list of preferred views (can be nil)
     # Return:
     # * <em>list<[DependencyDescription,Integer,Object]></em>: The list of dependencies to install, along with the index of installer and their respective install location
     # * <em>list<DependencyDescription></em>: The list of dependencies that the user chose to ignore deliberately
-    def askUserForMissingDeps(iMissingDependencies, ioAppliedContextModifiers)
+    def askUserForMissingDeps(iMissingDependencies, ioAppliedContextModifiers, iPreferredViewsList)
       rDepsToInstall = []
       rIgnoreDeps = []
 
-
+      lViewsList = iPreferredViewsList
+      if ((iPreferredViewsList == nil) or
+          (iPreferredViewsList.empty?))
+        # Set all views as being preferred
+        lViewsList = @Plugins.getPluginNames('Views')
+      end
+      # Now we try to select 1 view that is accessible without any dependency installation
+      lViewsList.each do |iViewName|
+        # TODO accessPlugin
+      end
 
       return rDepsToInstall, rIgnoreDeps
     end
@@ -356,7 +377,7 @@ module RDI
     # * *CodeBlock*: The code called when the plugin is found:
     # ** *ioPlugin* (_Object_): The corresponding plugin
     def accessPlugin(iCategoryName, iPluginName)
-      @Plugins.accessPlugin(iCategoryName, iPluginName) do |ioPlugin|
+      @Plugins.accessPlugin(iCategoryName, iPluginName, false, self) do |ioPlugin|
         yield(ioPlugin)
       end
     end

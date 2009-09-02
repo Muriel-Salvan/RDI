@@ -10,3 +10,4 @@
 ** In the dependenciesloader dialog, test internet connection before proposing installing Gems and Dlls.
 ** DependenciesLoaderDialog: The tree should have a little context menu for setting the decisions to ignore/specify directory/install-><Different locations>
 ** Implement a better looking ProgessDialog for DependenciesLoaderDialog
+** Separate CommonTools in an alternative package

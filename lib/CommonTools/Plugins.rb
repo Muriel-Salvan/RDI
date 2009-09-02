@@ -22,7 +22,7 @@ module CommonTools
       # Constructor
       def initialize
         # Map of plugins, per category
-        # map< String, map< String, map > >
+        # map< String, map< String, map< Symbol, Object > > >
         @Plugins = {}
       end
 
@@ -86,10 +86,11 @@ module CommonTools
       # Parameters:
       # * *iCategory* (_Object_): Category those plugins will belong to
       # * *iPluginName* (_String_): Plugin name
+      # * *iOnlyIfExtDepsResolved* (_Boolean_): Do we return the plugin only if there is no need to install external dependencies ? [optional = false]
       # * *ioRDIInstaller* (<em>RDI::Installer</em>): The RDI installer if available, or nil otherwise [optional = nil]
       # Return:
       # * _Object_: The corresponding plugin, or nil in case of failure
-      def getPluginInstance(iCategory, iPluginName, ioRDIInstaller = nil)
+      def getPluginInstance(iCategory, iPluginName, iOnlyIfExtDepsResolved = false, ioRDIInstaller = nil)
         rPlugin = nil
 
         if (@Plugins[iCategory] == nil)
@@ -102,25 +103,27 @@ module CommonTools
             if (lDesc[:PluginInstance] == nil)
               lSuccess = true
               # If RDI is present, call it to get dependencies first if needed
-              if (ioRDIInstaller != nil)
-                if (lDesc[:Dependencies] != nil)
+              if ((ioRDIInstaller != nil) and
+                  (lDesc[:Dependencies] != nil))
+                if (iOnlyIfExtDepsResolved)
+                  lSuccess = false
+                else
                   # Load other dependencies
                   lSuccess = ioRDIInstaller.ensureDependencies(lDesc[:Dependencies])
                 end
-                if ((lSuccess) and
-                    (lDesc[:PluginsDependencies] != nil))
+              end
+              if (lSuccess)
+                if (lDesc[:PluginsDependencies] != nil)
                   # Load other plugins
                   lDesc[:PluginsDependencies].each do |iPluginInfo|
                     iPluginCategory, iPluginName = iPluginInfo
-                    lSuccess = (getPluginInstance(iPluginCategory, iPluginName, ioRDIInstaller) != nil)
+                    lSuccess = (getPluginInstance(iPluginCategory, iPluginName, iOnlyIfExtDepsResolved, ioRDIInstaller) != nil)
                     if (!lSuccess)
                       # Don't try further
                       break
                     end
                   end
                 end
-              end
-              if (lSuccess)
                 # Load the plugin
                 begin
                   require lDesc[:PluginFileName]
@@ -170,12 +173,14 @@ module CommonTools
       # Parameters:
       # * *iCategoryName* (_String_): Category of the plugin to access
       # * *iPluginName* (_String_): Name of the plugin to access
+      # * *iOnlyIfExtDepsResolved* (_Boolean_): Do we return the plugin only if there is no need to install external dependencies ? [optional = false]
+      # * *ioRDIInstaller* (<em>RDI::Installer</em>): The RDI installer if available, or nil otherwise [optional = nil]
       # * *CodeBlock*: The code called when the plugin is found:
       # ** *ioPlugin* (_Object_): The corresponding plugin
-      def accessPlugin(iCategoryName, iPluginName)
-        lPlugin = getPluginInstance(iCategoryName, iPluginName)
+      def accessPlugin(iCategoryName, iPluginName, iOnlyIfExtDepsResolved = false, ioRDIInstaller = false)
+        lPlugin = getPluginInstance(iCategoryName, iPluginName, iOnlyIfExtDepsResolved, ioRDIInstaller)
         if (lPlugin == nil)
-          raise UnknownPluginError, "Unknown plugin #{iPluginName} in category #{iCategoryName}"
+          raise UnknownPluginError, "Could not get plugin #{iPluginName} in category #{iCategoryName}"
         else
           yield(lPlugin)
         end
@@ -184,6 +189,22 @@ module CommonTools
       # Clear the registered plugins
       def clearPlugins
         @Plugins = {}
+      end
+
+      # Get the list of plugin names of a given category
+      #
+      # Parameters:
+      # * *iCategoryName* (_String_): The category for which we want the plugin names list
+      # Return:
+      # * <em>list<String></em>: The list of plugin names in this category
+      def getPluginNames(iCategoryName)
+        rPlugins = []
+
+        if (@Plugins[iCategoryName] != nil)
+          rPlugins += @Plugins[iCategoryName].keys
+        end
+
+        return rPlugins
       end
 
     end
@@ -209,10 +230,12 @@ module CommonTools
     # Parameters:
     # * *iCategory* (_Object_): Category those plugins will belong to
     # * *iPluginName* (_String_): Plugin name
+    # * *iOnlyIfExtDepsResolved* (_Boolean_): Do we return the plugin only if there is no need to install external dependencies ? [optional = false]
+    # * *ioRDIInstaller* (<em>RDI::Installer</em>): The RDI installer if available, or nil otherwise [optional = nil]
     # Return:
     # * _Object_: The corresponding plugin, or nil in case of failure
-    def getPluginInstance(iCategory, iPluginName)
-      return $CT_Plugins_Manager.getPluginInstance(iCategory, iPluginName)
+    def getPluginInstance(iCategory, iPluginName, iOnlyIfExtDepsResolved = false, ioRDIInstaller = nil)
+      return $CT_Plugins_Manager.getPluginInstance(iCategory, iPluginName, iOnlyIfExtDepsResolved, ioRDIInstaller)
     end
 
     # Get the named plugin description
@@ -232,10 +255,12 @@ module CommonTools
     # Parameters:
     # * *iCategoryName* (_String_): Category of the plugin to access
     # * *iPluginName* (_String_): Name of the plugin to access
+    # * *iOnlyIfExtDepsResolved* (_Boolean_): Do we return the plugin only if there is no need to install external dependencies ? [optional = false]
+    # * *ioRDIInstaller* (<em>RDI::Installer</em>): The RDI installer if available, or nil otherwise [optional = nil]
     # * *CodeBlock*: The code called when the plugin is found:
     # ** *ioPlugin* (_Object_): The corresponding plugin
-    def accessPlugin(iCategoryName, iPluginName)
-      $CT_Plugins_Manager.accessPlugin(iCategoryName, iPluginName) do |ioPlugin|
+    def accessPlugin(iCategoryName, iPluginName, iOnlyIfExtDepsResolved = false, ioRDIInstaller = nil)
+      $CT_Plugins_Manager.accessPlugin(iCategoryName, iPluginName, iOnlyIfExtDepsResolved, ioRDIInstaller) do |ioPlugin|
         yield(ioPlugin)
       end
     end
@@ -243,6 +268,16 @@ module CommonTools
     # Clear the registered plugins
     def clearPlugins
       $CT_Plugins_Manager.clearPlugins
+    end
+
+    # Get the list of plugin names of a given category
+    #
+    # Parameters:
+    # * *iCategoryName* (_String_): The category for which we want the plugin names list
+    # Return:
+    # * <em>list<String></em>: The list of plugin names in this category
+    def getPluginNames(iCategoryName)
+      return $CT_Plugins_Manager.getPluginNames(iCategoryName)
     end
 
   end

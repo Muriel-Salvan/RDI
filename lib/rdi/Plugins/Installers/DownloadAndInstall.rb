@@ -35,6 +35,7 @@ module RDI
           if (iCmdProc.call(iLocation))
             # Remove temporary directory
             FileUtils::rm_rf(lTmpDir)
+            ioInstallEnv[:InstallDir] = iLocation
           else
             rError = RuntimeError.new('Installation code failed')
           end

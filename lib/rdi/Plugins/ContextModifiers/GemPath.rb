@@ -38,7 +38,7 @@ module RDI
       def transformContentWithInstallEnv(iLocation, iInstallEnv)
         rNewLocation = iLocation
 
-        lInstallDir = iInstallEnv[:InstallLocation]
+        lInstallDir = iInstallEnv[:InstallDir]
         if (lInstallDir != nil)
           rNewLocation = iLocation.gsub(/%INSTALLDIR%/, lInstallDir)
         end

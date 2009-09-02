@@ -49,6 +49,7 @@ module RDI
             begin
               FileUtils::mkdir_p(iLocation)
               FileUtils::cp(iLocalFileName, "#{iLocation}/#{File.basename(iLocalFileName)}")
+              ioInstallEnv[:InstallDir] = iLocation
             rescue Exception
               rError = $!
             end

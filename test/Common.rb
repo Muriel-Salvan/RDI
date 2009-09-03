@@ -17,7 +17,7 @@ module RDI
 
       # Constructor
       def setup
-        @RepositoryDir = File.expand_path("#{File.dirname(__FILE__)}/DependenciesRepository")
+        @RepositoryDir = File.expand_path("#{File.dirname(__FILE__)}/Repository")
         @Installer = nil
       end
 
@@ -181,7 +181,7 @@ module RDI
 
     end
 
-    # Module defining methods that test a given Installer
+    # Module defining methods that test a given ContextModifier
     # The setup of classes including this module should define
     #  @ContextModifierPluginName
     #  getTestLocation
@@ -239,6 +239,44 @@ module RDI
             assert_equal(true, ioPlugin.isLocationInContext?(lLocation))
             ioPlugin.removeLocationFromContext(lLocation)
             assert_equal(false, ioPlugin.isLocationInContext?(lLocation))
+          end
+        end
+      end
+
+    end
+
+    # Module defining methods that test a given View
+    # The setup of classes including this module should define
+    #  @ViewPluginName
+    module RDITestCase_Views
+
+      # Test that the API is correctly defined
+      def testAPI
+        setupAppDir do
+          @Installer.accessPlugin('Views', @ViewPluginName) do |ioPlugin|
+            assert(ioPlugin.is_a?(RDI::Model::View))
+            assert(ioPlugin.respond_to?(:execute))
+          end
+        end
+      end
+
+    end
+
+    # Module defining methods that test a given LocationSelector
+    # The setup of classes including this module should define
+    #  @LocationSelectorPluginName
+    module RDITestCase_LocationSelectors
+
+      # Test that the API is correctly defined
+      def testAPI
+        setupAppDir do
+          # Check that each view defines it
+          # Get the list of views
+          @Installer.getPluginNames('Views').each do |iViewName|
+            @Installer.accessPlugin("LocationSelectors_#{iViewName}", @LocationSelectorPluginName) do |ioPlugin|
+              assert(ioPlugin.is_a?(RDI::Model::LocationSelector))
+              assert(ioPlugin.respond_to?(:getNewLocation))
+            end
           end
         end
       end

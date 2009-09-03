@@ -7,7 +7,7 @@ module RDI
 
   module Views
 
-    class Text
+    class Text < RDI::Model::View
 
       # Ask the user about missing dependencies.
       # This method will use a user interface to know what to do with missing dependencies.

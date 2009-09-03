@@ -11,7 +11,7 @@ module RDI
 
       module Text
 
-        class Directory
+        class Directory < RDI::Model::LocationSelector
 
           # Give user the choice of a new location
           #

@@ -129,22 +129,51 @@ module RDI
         # If we ask for auto-installation, go on
         if (lAutoInstall == nil)
           # Ask the user what to do with those missing dependencies
-          lDependenciesToInstall, rIgnoredDeps = askUserForMissingDeps(lMissingDependencies, rAppliedContextModifiers, lPreferredViews)
-          # Install the dependencies marked to be installed
-          lDependenciesToInstall.each do |iInstallDepInfo|
-            iDepDesc, iIdxInstaller, iLocation = iInstallDepInfo
-            lInstallEnv = {}
-            rError = installDependency(iDepDesc, iIdxInstaller, iLocation, lInstallEnv)
-            # Get what has been modified in the context
-            rAppliedContextModifiers[iDepDesc.ID] = lInstallEnv[:ContextModifiers]
-            # If an error occurred, cancel
-            if (rError != nil)
-              break
+          rDepsUserChoices = askUserForMissingDeps(lMissingDependencies, lPreferredViews)
+          # Parse what was returned by the user choices
+          rDepsUserChoices.each do |iDepUserChoice|
+            lDepDesc = iDepUserChoice.DepDesc
+            lIgnore = false
+            if ((iDepUserChoice.Locate) and
+                (lDepDesc.Testers.size == iDepUserChoice.ResolvedTesters.size))
+              # This one was resolved using ContextModifiers.
+              # Apply them.
+              iDepUserChoice.ResolvedTesters.each do |iTesterName, iCMInfo|
+                iCMName, iCMContent = iCMInfo
+                accessPlugin('ContextModifiers', iCMName) do |ioPlugin|
+                  ioPlugin.addLocationToContext(iCMContent)
+                end
+              end
+              # Remember what we applied
+              rAppliedContextModifiers[lDepDesc.ID] = iDepUserChoice.ResolvedTesters.values
+            elsif (iDepUserChoice.IdxInstaller != nil)
+              # This one is to be installed
+              # Get the installer plugin
+              lInstallerName, lInstallerContent, lContextModifiers = lDepDesc.Installers[iDepUserChoice.IdxInstaller]
+              accessPlugin('Installers', lInstallerName) do |ioInstallerPlugin|
+                if (ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][0] == DEST_OTHER)
+                  lLocation = iDepUserChoice.OtherLocation
+                else
+                  lLocation = ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][1]
+                end
+                lInstallEnv = {}
+                rError = installDependency(lDepDesc, iDepUserChoice.IdxInstaller, lLocation, lInstallEnv)
+                # Get what has been modified in the context
+                rAppliedContextModifiers[lDepDesc.ID] = lInstallEnv[:ContextModifiers]
+                # If an error occurred, cancel
+                if (rError != nil)
+                  break
+                end
+              end
+            else
+              lIgnore = true
             end
-            # Test if it was installed correctly
-            if (!testDependency(iDepDesc))
-              # Still missing
-              rUnresolvedDeps << iDepDesc
+            if (!lIgnore)
+              # Test if it was installed correctly
+              if (!testDependency(lDepDesc))
+                # Still missing
+                rUnresolvedDeps << lDepDesc
+              end
             end
           end
         else
@@ -381,14 +410,11 @@ module RDI
     #
     # Parameters:
     # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
-    # * *ioAppliedContextModifiers* (<em>map<String,list<[String,Object]>></em>): The list of context modifiers that have been applied to resolve the dependencies, per dependency ID
     # * *iPreferredViewsList* (<em>list<String></em>): The list of preferred views (can be nil)
     # Return:
-    # * <em>list<[DependencyDescription,Integer,Object]></em>: The list of dependencies to install, along with the index of installer and their respective install location
-    # * <em>list<DependencyDescription></em>: The list of dependencies that the user chose to ignore deliberately
-    def askUserForMissingDeps(iMissingDependencies, ioAppliedContextModifiers, iPreferredViewsList)
-      rDepsToInstall = []
-      rIgnoreDeps = []
+    # * <em>list<DependencyUserChoice></em>: The list of dependencies user choices
+    def askUserForMissingDeps(iMissingDependencies, iPreferredViewsList)
+      rDependenciesUserChoices = []
 
       lViewsList = iPreferredViewsList
       if ((iPreferredViewsList == nil) or
@@ -422,21 +448,11 @@ module RDI
           logBug 'After trying all preferred views, we are still unable to have one.'
         else
           # Call it
-          rDepsToInstall, rIgnoreDeps, lContextModifiers = lPlugin.execute(self, iMissingDependencies)
-          # Apply the context modifiers and store them
-          lContextModifiers.each do |iDepID, iCMList|
-            iCMList.each do |iCMInfo|
-              iCMName, iCMContent = iCMInfo
-              accessPlugin('ContextModifiers', iCMName) do |ioPlugin|
-                ioPlugin.addLocationToContext(iCMContent)
-              end
-            end
-          end
-          ioAppliedContextModifiers.merge!(lContextModifiers)
+          rDependenciesUserChoices = lPlugin.execute(self, iMissingDependencies)
         end
       end
 
-      return rDepsToInstall, rIgnoreDeps
+      return rDependenciesUserChoices
     end
 
   end

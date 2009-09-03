@@ -126,95 +126,97 @@ module RDI
         else
           lMissingDependencies = getMissingDeps(lDepsToResolve, lPossibleContextModifiers, rAppliedContextModifiers)
         end
-        # If we ask for auto-installation, go on
-        if (lAutoInstall == nil)
-          # Ask the user what to do with those missing dependencies
-          rDepsUserChoices = askUserForMissingDeps(lMissingDependencies, lPreferredViews)
-          # Parse what was returned by the user choices
-          rDepsUserChoices.each do |iDepUserChoice|
-            lDepDesc = iDepUserChoice.DepDesc
-            lIgnore = false
-            if ((iDepUserChoice.Locate) and
-                (lDepDesc.Testers.size == iDepUserChoice.ResolvedTesters.size))
-              # This one was resolved using ContextModifiers.
-              # Apply them.
-              iDepUserChoice.ResolvedTesters.each do |iTesterName, iCMInfo|
-                iCMName, iCMContent = iCMInfo
-                accessPlugin('ContextModifiers', iCMName) do |ioPlugin|
-                  ioPlugin.addLocationToContext(iCMContent)
+        if (!lMissingDependencies.empty?)
+          # If we ask for auto-installation, go on
+          if (lAutoInstall == nil)
+            # Ask the user what to do with those missing dependencies
+            rDepsUserChoices = askUserForMissingDeps(lMissingDependencies, lPreferredViews)
+            # Parse what was returned by the user choices
+            rDepsUserChoices.each do |iDepUserChoice|
+              lDepDesc = iDepUserChoice.DepDesc
+              lIgnore = false
+              if ((iDepUserChoice.Locate) and
+                  (lDepDesc.Testers.size == iDepUserChoice.ResolvedTesters.size))
+                # This one was resolved using ContextModifiers.
+                # Apply them.
+                iDepUserChoice.ResolvedTesters.each do |iTesterName, iCMInfo|
+                  iCMName, iCMContent = iCMInfo
+                  accessPlugin('ContextModifiers', iCMName) do |ioPlugin|
+                    ioPlugin.addLocationToContext(iCMContent)
+                  end
                 end
-              end
-              # Remember what we applied
-              rAppliedContextModifiers[lDepDesc.ID] = iDepUserChoice.ResolvedTesters.values
-            elsif (iDepUserChoice.IdxInstaller != nil)
-              # This one is to be installed
-              # Get the installer plugin
-              lInstallerName, lInstallerContent, lContextModifiers = lDepDesc.Installers[iDepUserChoice.IdxInstaller]
-              accessPlugin('Installers', lInstallerName) do |ioInstallerPlugin|
-                if (ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][0] == DEST_OTHER)
-                  lLocation = iDepUserChoice.OtherLocation
-                else
-                  lLocation = ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][1]
-                end
-                lInstallEnv = {}
-                rError = installDependency(lDepDesc, iDepUserChoice.IdxInstaller, lLocation, lInstallEnv)
-                # Get what has been modified in the context
-                rAppliedContextModifiers[lDepDesc.ID] = lInstallEnv[:ContextModifiers]
-                # If an error occurred, cancel
-                if (rError != nil)
-                  break
-                end
-              end
-            else
-              lIgnore = true
-            end
-            if (!lIgnore)
-              # Test if it was installed correctly
-              if (!testDependency(lDepDesc))
-                # Still missing
-                rUnresolvedDeps << lDepDesc
-              end
-            end
-          end
-        else
-          lMissingDependencies.each do |iDepDesc|
-            # Try to find an installer and a location for the lAutoInstall value
-            lIdxInstaller = 0
-            lLocation = nil
-            iDepDesc.Installers.each do |iInstallerInfo|
-              iInstallerName, iInstallerContent, iContextModifiersList = iInstallerInfo
-              accessPlugin('Installers', iInstallerName) do |iPlugin|
-                iPlugin.PossibleDestinations.each do |iDestinationInfo|
-                  iLocationType, iLocation = iDestinationInfo
-                  if (iLocationType == lAutoInstall)
-                    # We found it
-                    lLocation = iLocation
+                # Remember what we applied
+                rAppliedContextModifiers[lDepDesc.ID] = iDepUserChoice.ResolvedTesters.values
+              elsif (iDepUserChoice.IdxInstaller != nil)
+                # This one is to be installed
+                # Get the installer plugin
+                lInstallerName, lInstallerContent, lContextModifiers = lDepDesc.Installers[iDepUserChoice.IdxInstaller]
+                accessPlugin('Installers', lInstallerName) do |ioInstallerPlugin|
+                  if (ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][0] == DEST_OTHER)
+                    lLocation = iDepUserChoice.OtherLocation
+                  else
+                    lLocation = ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][1]
+                  end
+                  lInstallEnv = {}
+                  rError = installDependency(lDepDesc, iDepUserChoice.IdxInstaller, lLocation, lInstallEnv)
+                  # Get what has been modified in the context
+                  rAppliedContextModifiers[lDepDesc.ID] = lInstallEnv[:ContextModifiers]
+                  # If an error occurred, cancel
+                  if (rError != nil)
                     break
                   end
                 end
+              else
+                lIgnore = true
               end
-              if (lLocation != nil)
+              if (!lIgnore)
+                # Test if it was installed correctly
+                if (!testDependency(lDepDesc))
+                  # Still missing
+                  rUnresolvedDeps << lDepDesc
+                end
+              end
+            end
+          else
+            lMissingDependencies.each do |iDepDesc|
+              # Try to find an installer and a location for the lAutoInstall value
+              lIdxInstaller = 0
+              lLocation = nil
+              iDepDesc.Installers.each do |iInstallerInfo|
+                iInstallerName, iInstallerContent, iContextModifiersList = iInstallerInfo
+                accessPlugin('Installers', iInstallerName) do |iPlugin|
+                  iPlugin.PossibleDestinations.each do |iDestinationInfo|
+                    iLocationType, iLocation = iDestinationInfo
+                    if (iLocationType == lAutoInstall)
+                      # We found it
+                      lLocation = iLocation
+                      break
+                    end
+                  end
+                end
+                if (lLocation != nil)
+                  break
+                end
+                lIdxInstaller += 1
+              end
+              if (lLocation == nil)
+                # We were unable to find a correct default location for lAutoInstall
+                rError = RuntimeError.new("Unable to find a default location for #{lAutoInstall}.")
+              else
+                lInstallEnv = {}
+                rError = installDependency(iDepDesc, lIdxInstaller, lLocation, lInstallEnv)
+                # Get what has been modified in the context
+                rAppliedContextModifiers[iDepDesc.ID] = lInstallEnv[:ContextModifiers]
+                # Test if it was installed correctly
+                if (!testDependency(iDepDesc))
+                  # Still missing
+                  rUnresolvedDeps << iDepDesc
+                end
+              end
+              if (rError != nil)
+                # An error occurred: cancel
                 break
               end
-              lIdxInstaller += 1
-            end
-            if (lLocation == nil)
-              # We were unable to find a correct default location for lAutoInstall
-              rError = RuntimeError.new("Unable to find a default location for #{lAutoInstall}.")
-            else
-              lInstallEnv = {}
-              rError = installDependency(iDepDesc, lIdxInstaller, lLocation, lInstallEnv)
-              # Get what has been modified in the context
-              rAppliedContextModifiers[iDepDesc.ID] = lInstallEnv[:ContextModifiers]
-              # Test if it was installed correctly
-              if (!testDependency(iDepDesc))
-                # Still missing
-                rUnresolvedDeps << iDepDesc
-              end
-            end
-            if (rError != nil)
-              # An error occurred: cancel
-              break
             end
           end
         end
@@ -323,7 +325,7 @@ module RDI
       end
     end
 
-    # Get lis of plugins for a given category.
+    # Get list of plugins for a given category.
     # Used by:
     # * Regression
     #
@@ -333,6 +335,21 @@ module RDI
     # * <em>list<String></em>: List of plugin names
     def getPluginNames(iCategoryName)
       return @Plugins.getPluginNames(iCategoryName)
+    end
+
+    # Register a new plugin
+    # Used by:
+    # * Regression
+    #
+    # Parameters:
+    # * *iCategoryName* (_String_): Category this plugin belongs to
+    # * *iPluginName* (_String_): Plugin name
+    # * *iFileName* (_String_): File name containing the plugin (can be nil)
+    # * *iDesc* (<em>map<Symbol,Object></em>): Plugin's description (can be nil)
+    # * *iClassName* (_String_): Name of the plugin class
+    # * *iInitCodeBlock* (_Proc_): Code block to call when initializing the real instance (can be nil)
+    def registerNewPlugin(iCategoryName, iPluginName, iFileName, iDesc, iClassName, iInitCodeBlock)
+      @Plugins.registerNewPlugin(iCategoryName, iPluginName, iFileName, iDesc, iClassName, iInitCodeBlock)
     end
 
     # == Private API ==
@@ -431,6 +448,7 @@ module RDI
           lPlugin = @Plugins.getPluginInstance('Views', iViewName, true, self)
           if (lPlugin != nil)
             # Found one
+            logDebug "Executing View #{iViewName}"
             break
           end
         end
@@ -440,6 +458,7 @@ module RDI
             lPlugin = @Plugins.getPluginInstance('Views', iViewName, false, self)
             if (lPlugin != nil)
               # Found one
+              logDebug "Executing View #{iViewName}"
               break
             end
           end

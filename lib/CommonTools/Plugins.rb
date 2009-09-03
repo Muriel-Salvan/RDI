@@ -26,6 +26,34 @@ module CommonTools
         @Plugins = {}
       end
 
+      # Register a new plugin
+      #
+      # Parameters:
+      # * *iCategoryName* (_String_): Category this plugin belongs to
+      # * *iPluginName* (_String_): Plugin name
+      # * *iFileName* (_String_): File name containing the plugin (can be nil)
+      # * *iDesc* (<em>map<Symbol,Object></em>): Plugin's description (can be nil)
+      # * *iClassName* (_String_): Name of the plugin class
+      # * *iInitCodeBlock* (_Proc_): Code block to call when initializing the real instance (can be nil)
+      def registerNewPlugin(iCategoryName, iPluginName, iFileName, iDesc, iClassName, iInitCodeBlock)
+        # Complete the description with some metadata
+        if (@Plugins[iCategoryName] == nil)
+          @Plugins[iCategoryName] = {}
+        end
+        lDesc = nil
+        if (iDesc == nil)
+          lDesc = {}
+        else
+          lDesc = iDesc.clone
+        end
+        lDesc[:PluginFileName] = iFileName
+        lDesc[:PluginInstance] = nil
+        lDesc[:PluginClassName] = iClassName
+        lDesc[:PluginInitCode] = iInitCodeBlock
+        lDesc[:PluginIndex] = @Plugins[iCategoryName].size
+        @Plugins[iCategoryName][iPluginName] = lDesc
+      end
+
       # Parse plugins from a given directory
       #
       # Parameters:
@@ -65,16 +93,14 @@ module CommonTools
           if (@Plugins[iCategory][lPluginName] == nil)
             # Check if we have a description
             lDesc = lDescriptions[lPluginName]
-            if (lDesc == nil)
-              lDesc = {}
-            end
-            # Complete the description with some metadata
-            lDesc[:PluginFileName] = iFileName
-            lDesc[:PluginInstance] = nil
-            lDesc[:PluginClassName] = "#{iBaseClassNames}::#{lPluginName}"
-            lDesc[:PluginInitCode] = iInitCodeBlock
-            lDesc[:PluginIndex] = @Plugins[iCategory].size
-            @Plugins[iCategory][lPluginName] = lDesc
+            registerNewPlugin(
+              iCategory,
+              lPluginName,
+              iFileName,
+              lDescriptions[lPluginName],
+              "#{iBaseClassNames}::#{lPluginName}",
+              iInitCodeBlock
+            )
           else
             logErr "Plugin named #{lPluginName} in category #{iCategory} already exists. Please name it differently. Ignoring it from #{iFileName}."
           end
@@ -126,7 +152,10 @@ module CommonTools
                 end
                 # Load the plugin
                 begin
-                  require lDesc[:PluginFileName]
+                  # If the file name is to be required, do it now
+                  if (lDesc[:PluginFileName] != nil)
+                    require lDesc[:PluginFileName]
+                  end
                   lPlugin = eval("#{lDesc[:PluginClassName]}.new")
                   lDesc[:PluginInstance] = lPlugin
                   # If needed, execute the init code
@@ -134,7 +163,7 @@ module CommonTools
                     lDesc[:PluginInitCode].call(lPlugin)
                   end
                 rescue Exception
-                  logExc $!, "Error while loading file #{lDesc[:PluginFileName]}. Ignoring this plugin."
+                  logExc $!, "Error while loading file #{lDesc[:PluginFileName]} and instantiating #{lDesc[:PluginClassName]}. Ignoring this plugin."
                 end
               end
             end
@@ -213,6 +242,19 @@ module CommonTools
     def self.initializePlugins
       $CT_Plugins_Manager = PluginsManager.new
       Object.module_eval('include CommonTools::Plugins')
+    end
+
+    # Register a new plugin
+    #
+    # Parameters:
+    # * *iCategoryName* (_String_): Category this plugin belongs to
+    # * *iPluginName* (_String_): Plugin name
+    # * *iFileName* (_String_): File name containing the plugin (can be nil)
+    # * *iDesc* (<em>map<Symbol,Object></em>): Plugin's description (can be nil)
+    # * *iClassName* (_String_): Name of the plugin class
+    # * *iInitCodeBlock* (_Proc_): Code block to call when initializing the real instance (can be nil)
+    def registerNewPlugin(iCategoryName, iPluginName, iFileName, iDesc, iClassName, iInitCodeBlock)
+      $CT_Plugins_Manager.registerNewPlugin(iCategoryName, iPluginName, iFileName, iDesc, iClassName, iInitCodeBlock)
     end
 
     # Parse plugins from a given directory

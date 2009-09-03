@@ -15,6 +15,33 @@ module RDI
 
     class RDITestCase < ::Test::Unit::TestCase
 
+      # Get a simple description to use in these test cases
+      #
+      # Return:
+      # * <em>RDI::Model::DependencyDescription</em>: The description
+      def getSimpleDesc
+        return RDI::Model::DependencyDescription.new('DummyBinary').addDescription( {
+          :Testers => [
+            {
+              :Type => 'Binaries',
+              :Content => [ 'DummyBinary' ]
+            }
+          ],
+          :Installers => [
+            {
+              :Type => 'Download',
+              :Content => "#{@RepositoryDir}/Binaries/DummyBinary",
+              :ContextModifiers => [
+                {
+                  :Type => 'SystemPath',
+                  :Content => '%INSTALLDIR%'
+                }
+              ]
+            }
+          ]
+        } )
+      end
+
       # Constructor
       def setup
         @RepositoryDir = File.expand_path("#{File.dirname(__FILE__)}/Repository")
@@ -65,6 +92,23 @@ module RDI
             end
           end
         end
+      end
+
+      # Setup a regresion UI before calling some code
+      #
+      # Parameters:
+      # * *iClassName* (_String_): Class name of the View to be used
+      def setupRegressionUI(iClassName)
+        # Add a View plugin
+        @Installer.registerNewPlugin(
+          'Views',
+          'RegressionUI',
+          nil,
+          nil,
+          iClassName,
+          nil
+        )
+        yield
       end
 
     end

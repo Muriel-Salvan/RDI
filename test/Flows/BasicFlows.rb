@@ -10,36 +10,9 @@ module RDI
 
   module Test
 
-    module Basic
+    module Flows
 
       class BasicFlows < RDITestCase
-
-        # Get a simple description to use in these test cases
-        #
-        # Return:
-        # * <em>RDI::Model::DependencyDescription</em>: The description
-        def getSimpleDesc
-          return RDI::Model::DependencyDescription.new('DummyBinary').addDescription( {
-            :Testers => [
-              {
-                :Type => 'Binaries',
-                :Content => [ 'DummyBinary' ]
-              }
-            ],
-            :Installers => [
-              {
-                :Type => 'Download',
-                :Content => "#{@RepositoryDir}/Binaries/DummyBinary",
-                :ContextModifiers => [
-                  {
-                    :Type => 'SystemPath',
-                    :Content => '%INSTALLDIR%'
-                  }
-                ]
-              }
-            ]
-          } )
-        end
 
         # Test that we can test for a missing dependency
         def testMissingDep
@@ -82,7 +55,7 @@ module RDI
             iInstallerName, iInstallerContent = lDesc.Installers[0]
             lInstallLocation = nil
             # Use a private method for regression only
-            @Installer.send(:accessPlugin, 'Installers', iInstallerName) do |ioPlugin|
+            @Installer.accessPlugin('Installers', iInstallerName) do |ioPlugin|
               ioPlugin.PossibleDestinations.each do |iDestInfo|
                 iDestFlavour, iLocation = iDestInfo
                 if (iDestFlavour == DEST_LOCAL)
@@ -123,14 +96,14 @@ module RDI
             assert_equal([], lUnresolvedDeps)
             # If RDI has correctly found it, there are 2 things that can prove it:
             # 1. The system path should have "#{@RepositoryDir}/Binaries"
-            @Installer.send(:accessPlugin, 'Testers', 'Binaries') do |iPlugin|
+            @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
               assert_equal(true, iPlugin.isContentResolved?('DummyBinary'))
             end
             # 2. The dependency should not have been installed
             iInstallerName, iInstallerContent = lDesc.Installers[0]
             lInstallLocation = nil
             # Use a private method for regression only
-            @Installer.send(:accessPlugin, 'Installers', iInstallerName) do |ioPlugin|
+            @Installer.accessPlugin('Installers', iInstallerName) do |ioPlugin|
               ioPlugin.PossibleDestinations.each do |iDestInfo|
                 iDestFlavour, iLocation = iDestInfo
                 if (iDestFlavour == DEST_LOCAL)

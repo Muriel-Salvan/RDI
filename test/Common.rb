@@ -98,7 +98,8 @@ module RDI
       #
       # Parameters:
       # * *iClassName* (_String_): Class name of the View to be used
-      def setupRegressionUI(iClassName)
+      # * *iLocationSelectorClassName* (_String_): Class name of the location selector [optional = nil]
+      def setupRegressionUI(iClassName, iLocationSelectorClassName = nil)
         # Add a View plugin
         @Installer.registerNewPlugin(
           'Views',
@@ -108,6 +109,17 @@ module RDI
           iClassName,
           nil
         )
+        # Add the location selector
+        if (iLocationSelectorClassName != nil)
+          @Installer.registerNewPlugin(
+            'LocationSelectors_RegressionUI',
+            'Directory',
+            nil,
+            nil,
+            iLocationSelectorClassName,
+            nil
+          )
+        end
         yield
       end
 

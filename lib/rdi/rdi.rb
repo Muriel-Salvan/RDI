@@ -11,6 +11,7 @@ require 'CommonTools/Platform.rb'
 CommonTools::Platform::initializePlatform
 
 require 'rdi/Model/DependencyDescription.rb'
+require 'rdi/Model/DependencyUserChoice.rb'
 require 'rdi/Model/Installer.rb'
 require 'rdi/Model/ContextModifier.rb'
 require 'rdi/Model/Tester.rb'

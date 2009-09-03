@@ -135,23 +135,28 @@ module RDI
             rDepsUserChoices.each do |iDepUserChoice|
               lDepDesc = iDepUserChoice.DepDesc
               lIgnore = false
-              if ((iDepUserChoice.Locate) and
-                  (lDepDesc.Testers.size == iDepUserChoice.ResolvedTesters.size))
-                # This one was resolved using ContextModifiers.
-                # Apply them.
-                iDepUserChoice.ResolvedTesters.each do |iTesterName, iCMInfo|
-                  iCMName, iCMContent = iCMInfo
-                  accessPlugin('ContextModifiers', iCMName) do |ioPlugin|
-                    ioPlugin.addLocationToContext(iCMContent)
+              if (iDepUserChoice.Locate)
+                if (lDepDesc.Testers.size == iDepUserChoice.ResolvedTesters.size)
+                  # This one was resolved using ContextModifiers.
+                  # Apply them.
+                  iDepUserChoice.ResolvedTesters.each do |iTesterName, iCMInfo|
+                    iCMName, iCMContent = iCMInfo
+                    accessPlugin('ContextModifiers', iCMName) do |ioPlugin|
+                      ioPlugin.addLocationToContext(iCMContent)
+                    end
                   end
+                  # Remember what we applied
+                  rAppliedContextModifiers[lDepDesc.ID] = iDepUserChoice.ResolvedTesters.values
+                else
+                  rUnresolvedDeps << lDepDesc
+                  lIgnore = true
                 end
-                # Remember what we applied
-                rAppliedContextModifiers[lDepDesc.ID] = iDepUserChoice.ResolvedTesters.values
               elsif (iDepUserChoice.IdxInstaller != nil)
                 # This one is to be installed
                 # Get the installer plugin
                 lInstallerName, lInstallerContent, lContextModifiers = lDepDesc.Installers[iDepUserChoice.IdxInstaller]
                 accessPlugin('Installers', lInstallerName) do |ioInstallerPlugin|
+                  lLocation = nil
                   if (ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][0] == DEST_OTHER)
                     lLocation = iDepUserChoice.OtherLocation
                   else
@@ -167,6 +172,7 @@ module RDI
                   end
                 end
               else
+                rIgnoredDeps << lDepDesc
                 lIgnore = true
               end
               if (!lIgnore)

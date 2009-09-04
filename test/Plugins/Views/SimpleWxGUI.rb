@@ -9,17 +9,17 @@ module RDI
 
     module Views
 
-      class SimpleWxGUI < RDITestCase
-
-        include RDITestCase_Views
-
-        # Constructor
-        def setup
-          super
-          @ViewPluginName = 'SimpleWxGUI'
-        end
-
-      end
+#      class SimpleWxGUI < RDITestCase
+#
+#        include RDITestCase_Views
+#
+#        # Constructor
+#        def setup
+#          super
+#          @ViewPluginName = 'SimpleWxGUI'
+#        end
+#
+#      end
 
     end
 

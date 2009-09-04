@@ -23,7 +23,7 @@ module RDI
             puts 'Please enter a directory name (Ctrl-C to cancel):'
             $stdout.write('-Directory-> ')
             begin
-              rLocation = $stdin.gets
+              rLocation = $stdin.gets.chomp
             rescue Exception
               rLocation = nil
             end

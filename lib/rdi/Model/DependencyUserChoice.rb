@@ -56,14 +56,28 @@ module RDI
         @IdxDestination = 0
         @ResolvedTesters = {}
         @OtherLocation = nil
-        @AffectingContextModifiers = []
+        @AffectingContextModifiers = DependencyUserChoice::getAffectingContextModifiers(@Installer, @DepDesc)
+      end
+
+      # Compute the list of AffectingContextModifiers
+      #
+      # Parameters:
+      # * *ioInstaller* (_Installer_): The installer
+      # * *iDepDesc* (_DependencyDescription_): The dependency description
+      # Return:
+      # * <em>list<String></em>: The list of ContextModifiers names
+      def self.getAffectingContextModifiers(ioInstaller, iDepDesc)
+        rAffectingContextModifiers = []
+
         # Gather the list of affecting ContextModifiers by parsing every Tester.
-        @DepDesc.Testers.each do |iTesterInfo|
+        iDepDesc.Testers.each do |iTesterInfo|
           iTesterName, iTesterContent = iTesterInfo
-          @Installer.accessPlugin('Testers', iTesterName) do |iPlugin|
-            @AffectingContextModifiers = (@AffectingContextModifiers + iPlugin.AffectingContextModifiers).uniq
+          ioInstaller.accessPlugin('Testers', iTesterName) do |iPlugin|
+            rAffectingContextModifiers = (rAffectingContextModifiers + iPlugin.AffectingContextModifiers).uniq
           end
         end
+
+        return rAffectingContextModifiers
       end
 
       # Ask the user to change the context of a given context modifier to resolve this dependency
@@ -154,6 +168,25 @@ module RDI
         @Locate = false
         @IdxInstaller = iIdxInstaller
         @IdxDestination = iIdxDestination
+      end
+
+      # Do we equal another user choice ?
+      # Used by the regression
+      #
+      # Parameters:
+      # * *iOtherDUC* (_DependencyOtherChoice_): The other one
+      # Return:
+      # * _Boolean_: Do we equal another user choice ?
+      def ==(iOtherDUC)
+        return (
+          (@DepDesc == iOtherDUC.DepDesc) and
+          (@Ignore == iOtherDUC.Ignore) and
+          (@Locate == iOtherDUC.Locate) and
+          (@IdxInstaller == iOtherDUC.IdxInstaller) and
+          (@IdxDestination == iOtherDUC.IdxDestination) and
+          (@ResolvedTesters == iOtherDUC.ResolvedTesters) and
+          (@OtherLocation == iOtherDUC.OtherLocation)
+        )
       end
 
     end

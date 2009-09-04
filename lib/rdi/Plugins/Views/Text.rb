@@ -40,7 +40,7 @@ module RDI
           # Parse user choice
           lInvalid = false
           # Check that we have an array of integers not 0
-          lUserChoice = lUserChoiceText.split('.').map do |iElem|
+          lUserChoice = lUserChoiceText.chomp('.').chomp.split('.').map do |iElem|
             lInt = iElem.to_i
             if (lInt == 0)
               lInvalid = true
@@ -76,7 +76,7 @@ module RDI
                       lInvalid = true
                     else
                       # Select a new location for the given context modifier
-                      lDepUserChoice.affectContextModifier(lDepDesc, lDepUserChoice.AffectingContextModifiers[lUserChoice[2]-1])
+                      lDepUserChoice.affectContextModifier(lDepUserChoice.AffectingContextModifiers[lUserChoice[2]-1])
                     end
                   else
                     lInvalid = true
@@ -105,7 +105,7 @@ module RDI
                         # Check if it is a DEST_OTHER flavour
                         if (ioPlugin.PossibleDestinations[lUserChoice[3]-1][0] == DEST_OTHER)
                           # Replace the other location of this dependency
-                          if (lDepUserChoice.selectOtherInstallLocation(ioPlugin.PossibleDestinations[lUserChoice[3]-1][1]))
+                          if (!lDepUserChoice.selectOtherInstallLocation(ioPlugin.PossibleDestinations[lUserChoice[3]-1][1]))
                             lDepUserChoice.setInstaller(lUserChoice[2]-1, 0)
                           end
                         end
@@ -232,7 +232,7 @@ module RDI
                   lFlavourText = 'Unknown'
                 end
                 lInstallLocationSelectionText = ' '
-                if (lDepUserChoice.UserChoice[2] == lIdxDest)
+                if (lDepUserChoice.IdxDestination == lIdxDest-1)
                   lInstallLocationSelectionText = '*'
                 end
                 puts "      #{lIdxMissingDeps}.3.#{lIdxInstaller}.#{lIdxDest}. (#{lInstallLocationSelectionText}) #{lFlavourText} - #{lDestLocation}"

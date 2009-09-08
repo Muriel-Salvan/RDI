@@ -76,7 +76,7 @@ module CommonTools
             @URLs[lURLHash] = nil
             # Get the object
             lObject = nil
-            lAccessError = accessFile(iURL, iParameters.merge(:URLHandler => iURL)) do |iContent, iBaseName|
+            lAccessError = accessFile(iURL, iParameters.merge(:URLHandler => lURLHandler)) do |iContent, iBaseName|
               lObject, rError = yield(iContent)
             end
             if (lAccessError != nil)

@@ -20,7 +20,11 @@ module RDI
           def getNewLocation
             rLocation = nil
 
-            # TODO
+            showModal(Wx::DirDialog, nil) do |iModalResult, iDialog|
+              if (iModalResult == Wx::ID_OK)
+                rLocation = iDialog.path
+              end
+            end
 
             return rLocation
           end

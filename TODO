@@ -4,9 +4,10 @@
 ** Create FAQ
 
 * Testing
-** GUI regression
 ** Regression should test automatically for each Installer type that depending on the location of the install (Local, System, User...), only the correct directories are altered.
 ** Regression should warn when plugins don't have regression test cases
+** Add cases were part of Testers are resolved (do GUIs correctly take the resolved ones into account ?)
+** Add generic cases testing that for each AffectingContextModifier in Testers plugins, they effectively resolve Testers.
 
 * Development
 ** In the dependenciesloader dialog, test internet connection before proposing installing Gems and Dlls.

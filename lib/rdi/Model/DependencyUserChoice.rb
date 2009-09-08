@@ -105,9 +105,15 @@ module RDI
                     # Test this one
                     iTesterName, iTesterContent = iTesterInfo
                     @Installer.accessPlugin('Testers', iTesterName) do |iTesterPlugin|
-                      if (iTesterPlugin.isContentResolved?(iTesterContent))
-                        # Yes, it resolved this one
-                        @ResolvedTesters[lIdxTester] = [ iCMName, lLocationToTry ]
+                      # Consider it only if it declares iCMName as an AffectingContextModifier
+                      if (iTesterPlugin.AffectingContextModifiers.include?(iCMName))
+                        if (iTesterPlugin.isContentResolved?(iTesterContent))
+                          # Yes, it resolved this one
+                          @ResolvedTesters[lIdxTester] = [ iCMName, lLocationToTry ]
+                          logMsg "Location #{lLocationToTry} resolves correctly #{iTesterName} - #{iTesterContent}"
+                        else
+                          logErr "Location #{lLocationToTry} does not resolve #{iTesterName} - #{iTesterContent}"
+                        end
                       end
                     end
                   end

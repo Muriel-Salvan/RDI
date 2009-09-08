@@ -41,12 +41,17 @@ module RDI
     #   String
     attr_reader :TempDir
 
+    # The RDI lib dir (useful to parse for files among plugins)
+    #   String
+    attr_reader :RDILibDir
+
     # Constructor
     #
     # Parameters:
     # * *iAppRootDir* (_String_): Application's root directory
     def initialize(iAppRootDir)
       @AppRootDir = iAppRootDir
+      @RDILibDir = File.dirname(__FILE__)
       @ExtDir = "#{@AppRootDir}/ext/#{RUBY_PLATFORM}"
       # Initialize all other standard directories
       case RUBY_PLATFORM
@@ -67,24 +72,23 @@ module RDI
       # Initialize the plugins manager
       @Plugins = CommonTools::Plugins::PluginsManager.new
       # Get the RDI root directory for libraries
-      lRDILibDir = File.dirname(__FILE__)
       # Get all plugins
-      @Plugins.parsePluginsFromDir('ContextModifiers', "#{lRDILibDir}/Plugins/ContextModifiers", 'RDI::ContextModifiers') do |ioPlugin|
+      @Plugins.parsePluginsFromDir('ContextModifiers', "#{@RDILibDir}/Plugins/ContextModifiers", 'RDI::ContextModifiers') do |ioPlugin|
         # Cache some attributes
         ioPlugin.LocationSelectorName = ioPlugin.getLocationSelectorName
       end
-      @Plugins.parsePluginsFromDir('Installers', "#{lRDILibDir}/Plugins/Installers", 'RDI::Installers') do |ioPlugin|
+      @Plugins.parsePluginsFromDir('Installers', "#{@RDILibDir}/Plugins/Installers", 'RDI::Installers') do |ioPlugin|
         ioPlugin.Installer = self
         # Cache some attributes
         ioPlugin.PossibleDestinations = ioPlugin.getPossibleDestinations
       end
-      @Plugins.parsePluginsFromDir('Testers', "#{lRDILibDir}/Plugins/Testers", 'RDI::Testers') do |ioPlugin|
+      @Plugins.parsePluginsFromDir('Testers', "#{@RDILibDir}/Plugins/Testers", 'RDI::Testers') do |ioPlugin|
         # Cache some attributes
         ioPlugin.AffectingContextModifiers = ioPlugin.getAffectingContextModifiers
       end
-      @Plugins.parsePluginsFromDir('Views', "#{lRDILibDir}/Plugins/Views", 'RDI::Views')
+      @Plugins.parsePluginsFromDir('Views', "#{@RDILibDir}/Plugins/Views", 'RDI::Views')
       @Plugins.getPluginNames('Views').each do |iViewName|
-        @Plugins.parsePluginsFromDir("LocationSelectors_#{iViewName}", "#{lRDILibDir}/Plugins/Views/#{iViewName}/LocationSelectors", "RDI::Views::LocationSelectors::#{iViewName}")
+        @Plugins.parsePluginsFromDir("LocationSelectors_#{iViewName}", "#{@RDILibDir}/Plugins/Views/#{iViewName}/LocationSelectors", "RDI::Views::LocationSelectors::#{iViewName}")
       end
     end
 

@@ -40,7 +40,7 @@ module RDI
             end
             rSuccess = false
             $LOAD_PATH.each do |iDir|
-              rSuccess = (!Dir.glob("#{iDir}/#{lFileFilter}").empty?)
+              rSuccess = (!Dir.glob(File.expand_path("#{iDir}/#{lFileFilter}")).empty?)
               if (rSuccess)
                 # We found it. Don't try other paths.
                 break

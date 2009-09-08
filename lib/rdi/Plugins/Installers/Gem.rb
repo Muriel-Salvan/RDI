@@ -40,12 +40,14 @@ module RDI
         require 'rubygems/command_manager'
         # Install
         begin
-          ::Gem::CommandManager.instance.find_command('install').invoke(iContent, '-i', iLocation, '--no-rdoc', '--no-ri', '--no-test')
-          ioInstallEnv[:InstallDir] = iLocation
+          lSplitContent = iContent.split(' ') + [ '-i', iLocation, '--no-rdoc', '--no-ri', '--no-test' ]
+          ::Gem::CommandManager.instance.find_command('install').invoke(*lSplitContent)
         rescue ::Gem::SystemExitException
           # For RubyGems, this is normal behaviour: success results in an exception thrown with exit_code 0.
           if ($!.exit_code != 0)
             rError = $!
+          else
+            ioInstallEnv[:InstallDir] = iLocation
           end
         rescue Exception
           rError = $!

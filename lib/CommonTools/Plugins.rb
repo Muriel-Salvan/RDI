@@ -135,7 +135,12 @@ module CommonTools
                   lSuccess = false
                 else
                   # Load other dependencies
-                  lSuccess = ioRDIInstaller.ensureDependencies(lDesc[:Dependencies])
+                  lError, lContextModifiers, lIgnored, lUnresolved = ioRDIInstaller.ensureDependencies(lDesc[:Dependencies])
+                  lSuccess = ((lError == nil) and
+                              (lUnresolved.empty?))
+                  if (!lSuccess)
+                    logErr "Could not load dependencies for plugin #{iPluginName}."
+                  end
                 end
               end
               if (lSuccess)

@@ -98,6 +98,7 @@ module RDI
     # * *iDepDescList* (<em>list<DependencyDescription></em>): The list of dependencies's description to ensure
     # * *iParameters* (<em>map<Symbol,Object></em>): Additional parameters:
     # ** *:AutoInstall* (_Integer_): When set to one of the DEST_* constants, RDI installs automatically to a location flagged with this constant, without the need of user choice [optional = nil]
+    # ** *:AutoInstallLocation* (_Object_): Used to provide the location to install to, when :AutoInstall is set to DEST_OTHER only.
     # ** *:PossibleContextModifiers* (<em>map<String,list<list<[String,Object]>>></em>): The list of possible context modifiers sets to try, per dependency ID [optional = nil]
     # ** *:PreferredViews* (<em>list<String></em>): The list of preferred views [optional = nil]
     # Return:
@@ -112,6 +113,7 @@ module RDI
       rUnresolvedDeps = []
 
       lAutoInstall = iParameters[:AutoInstall]
+      lAutoInstallLocation = iParameters[:AutoInstallLocation]
       lPossibleContextModifiers = iParameters[:PossibleContextModifiers]
       lPreferredViews = iParameters[:PreferredViews]
       # First, test if the dependencies are already accessible
@@ -196,10 +198,14 @@ module RDI
                 iInstallerName, iInstallerContent, iContextModifiersList = iInstallerInfo
                 accessPlugin('Installers', iInstallerName) do |iPlugin|
                   iPlugin.PossibleDestinations.each do |iDestinationInfo|
-                    iLocationType, iLocation = iDestinationInfo
-                    if (iLocationType == lAutoInstall)
+                    iLocationFlavour, iLocation = iDestinationInfo
+                    if (iLocationFlavour == lAutoInstall)
                       # We found it
-                      lLocation = iLocation
+                      if (iLocationFlavour == DEST_OTHER)
+                        lLocation = lAutoInstallLocation
+                      else
+                        lLocation = iLocation
+                      end
                       break
                     end
                   end

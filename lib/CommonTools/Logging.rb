@@ -12,6 +12,9 @@ module CommonTools
     # The logger class singleton
     class Logger
 
+      # Constants used for GUI dialogs selection
+      GUI_WX = 0
+
       # Constructor
       #
       # Parameters:
@@ -24,6 +27,7 @@ module CommonTools
         @LogFile = nil
         @ErrorsStack = nil
         @MessagesStack = nil
+        @DialogsGUI = nil
         @ScreenOutput = (!iSilentOutputs)
         @ScreenOutputErr = (!iSilentOutputs)
         if (!iSilentOutputs)
@@ -33,7 +37,8 @@ module CommonTools
           rescue Exception
             # Redirect to a file if possible
             begin
-              redirectStdOutToFile('./stdout')
+              lFile = File.open('./stdout', 'w')
+              $stdout.reopen(lFile)
               $stdout << "Launch Logging - stdout\n"
             rescue Exception
               # Disable
@@ -46,7 +51,8 @@ module CommonTools
           rescue Exception
             # Redirect to a file if possible
             begin
-              redirectStdErrToFile('./stderr')
+              lFile = File.open('./stderr', 'w')
+              $stderr.reopen(lFile)
               $stderr << "Launch Logging - stderr\n"
             rescue Exception
               # Disable
@@ -56,22 +62,12 @@ module CommonTools
         end
       end
 
-      # Redirect $stdout to a file
+      # Indicate which GUI to be used to display dialogs.
       #
       # Parameters:
-      # * *iFileName* (_String_): File name to redirect $stdout to
-      def redirectStdOutToFile(iFileName)
-        lFile = File.open(iFileName, 'w')
-        $stdout.reopen(lFile)
-      end
-
-      # Redirect $stderr to a file
-      #
-      # Parameters:
-      # * *iFileName* (_String_): File name to redirect $stderr to
-      def redirectStdErrToFile(iFileName)
-        lFile = File.open(iFileName, 'w')
-        $stderr.reopen(lFile)
+      # * *iGUIToUse* (_Integer_): The GUI constant, or nil if no GUI is provided
+      def setGUIForDialogs(iGUIToUse)
+        @DialogsGUI = iGUIToUse
       end
 
       # Set the debug mode
@@ -178,12 +174,7 @@ Details:
         end
         # Display dialog only if we are not redirecting messages to a stack
         if (@ErrorsStack == nil)
-          if (defined?(showModal) == nil)
-            # Use normal platform dependent message, if the platform has been initialized (otherwise, stick to $stderr)
-            if (defined?($CT_Platform_Info) != nil)
-              $CT_Platform_Info.sendMsg(iMsg)
-            end
-          else
+          if (showModalWxAvailable?)
             showModal(Wx::MessageDialog, nil,
               iMsg,
               :caption => 'Error',
@@ -191,6 +182,9 @@ Details:
             ) do |iModalResult, iDialog|
               # Nothing to do
             end
+          elsif (defined?($CT_Platform_Info) != nil)
+            # Use normal platform dependent message, if the platform has been initialized (otherwise, stick to $stderr)
+            $CT_Platform_Info.sendMsg(iMsg)
           end
         else
           @ErrorsStack << iMsg
@@ -212,13 +206,8 @@ Details:
         end
         # Display dialog only if we are not redirecting messages to a stack
         if (@MessagesStack == nil)
-          # Display dialog
-          if (defined?(showModal) == nil)
-            # Use normal platform dependent message, if the platform has been initialized (otherwise, stick to $stderr)
-            if (defined?($CT_Platform_Info) != nil)
-              $CT_Platform_Info.sendMsg(iMsg)
-            end
-          else
+          # Display dialog only if showModal exists and that we are currently running the application
+          if (showModalWxAvailable?)
             showModal(Wx::MessageDialog, nil,
               iMsg,
               :caption => 'Notification',
@@ -226,6 +215,9 @@ Details:
             ) do |iModalResult, iDialog|
               # Nothing to do
             end
+          elsif (defined?($CT_Platform_Info) != nil)
+            # Use normal platform dependent message, if the platform has been initialized (otherwise, stick to $stderr)
+            $CT_Platform_Info.sendMsg(iMsg)
           end
         else
           @MessagesStack << iMsg
@@ -264,6 +256,17 @@ Details:
       end
 
       private
+
+      # Check if Wx dialogs environment is set up
+      #
+      # Return:
+      # * _Boolean_: Can we use showModal ?
+      def showModalWxAvailable?
+        return (
+          (defined?(showModal) != nil) and
+          (@DialogsGUI == GUI_WX)
+        )
+      end
 
       # Log a message in the log file
       #
@@ -329,6 +332,14 @@ Details:
       $CT_Logging_Logger = CommonTools::Logging::Logger.new(iLibRootDir, iBugTrackerURL, iSilentOutputs)
       # Add the module accessible from the Kernel
       Object.module_eval('include CommonTools::Logging')
+    end
+
+    # Indicate which GUI to be used to display dialogs.
+    #
+    # Parameters:
+    # * *iGUIToUse* (_Integer_): The GUI constant, or nil if no GUI is provided
+    def setGUIForDialogs(iGUIToUse)
+      $CT_Logging_Logger.setGUIForDialogs(iGUIToUse)
     end
 
     # Set the debug mode

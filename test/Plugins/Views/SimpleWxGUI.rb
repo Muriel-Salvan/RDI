@@ -3,6 +3,8 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
+require 'Plugins/WxEnv'
+
 module RDI
 
   module Test
@@ -13,20 +15,13 @@ module RDI
 
         include RDITestCase_Views
 
+        include RDI::Test::RDIWx
+
         # Constructor
         def setup
           super
           @ViewPluginName = 'SimpleWxGUI'
-          require 'rdi/Plugins/WxRubyDepDesc.rb'
-          RDI::Installer.new(@RepositoryDir).ensureDependencies(
-            [ ::RDI::getWxRubyDepDesc ],
-            {
-              :AutoInstall => DEST_TEMP,
-              :PreferredViews => [ 'Text' ]
-            } )
-          # TODO: Reenable it when WxRuby will be more stable
-          GC.disable
-          require 'wx'
+          installTestWxEnv
         end
 
       end

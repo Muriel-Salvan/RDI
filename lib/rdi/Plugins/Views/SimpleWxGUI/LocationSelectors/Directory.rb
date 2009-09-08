@@ -3,6 +3,8 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
+require 'rdi/Plugins/WxCommon'
+
 module RDI
 
   module Views
@@ -13,6 +15,8 @@ module RDI
 
         class Directory < RDI::Model::LocationSelector
 
+          include RDI::Views::RDIWx
+
           # Give user the choice of a new location
           #
           # Return:
@@ -20,9 +24,11 @@ module RDI
           def getNewLocation
             rLocation = nil
 
-            showModal(Wx::DirDialog, nil) do |iModalResult, iDialog|
-              if (iModalResult == Wx::ID_OK)
-                rLocation = iDialog.path
+            ensureWxApp do
+              showModal(Wx::DirDialog, nil) do |iModalResult, iDialog|
+                if (iModalResult == Wx::ID_OK)
+                  rLocation = iDialog.path
+                end
               end
             end
 

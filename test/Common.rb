@@ -742,6 +742,11 @@ alias :getNewLocation :getNewLocation_ORG
           # Check that each view defines it
           # Get the list of views
           @Installer.getPluginNames('Views').each do |iViewName|
+            # Install the dependencies automatically before calling the plugin (we don't want to ask the user about it)
+            lInstallMethod = "installDep_#{iViewName}".to_sym
+            if (respond_to?(lInstallMethod))
+              send(lInstallMethod)
+            end
             @Installer.accessPlugin("LocationSelectors_#{iViewName}", @LocationSelectorPluginName) do |ioPlugin|
               assert(ioPlugin.is_a?(RDI::Model::LocationSelector))
               assert(ioPlugin.respond_to?(:getNewLocation))

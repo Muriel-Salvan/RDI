@@ -3,33 +3,15 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
+require 'rdi/Plugins/WxCommon'
+
 module RDI
 
   module Views
 
     class SimpleWxGUI < RDI::Model::View
 
-      # Class for the application
-      class TestApp < Wx::App
-
-        # Constructor
-        #
-        # Parameters:
-        # * *ioInstaller* (_Installer_): The installer
-        # * *ioDependenciesUserChoices* (<em>list<DependencyUserChoice></em>): The list of dependency user choices
-        def initialize(ioInstaller, ioDependenciesUserChoices)
-          super()
-          @Installer, @DependenciesUserChoices = ioInstaller, ioDependenciesUserChoices
-        end
-
-        # Initialize the application
-        def on_init
-          showModal(DependenciesLoaderDialog, nil, @Installer, @DependenciesUserChoices) do |iModalResult, iDialog|
-            # Nothing to do
-          end
-        end
-
-      end
+      include RDI::Views::RDIWx
 
       # Ask the user about missing dependencies.
       # This method will use a user interface to know what to do with missing dependencies.
@@ -54,12 +36,20 @@ module RDI
         end
         # Display the dialog
         require 'rdi/Plugins/Views/SimpleWxGUI/DependenciesLoaderDialog'
-        require 'CommonTools/GUI'
-        CommonTools::GUI.initializeGUI
-        require 'CommonTools/URLCache'
-        CommonTools::URLCache.initializeURLCache
-        # Call application
-        TestApp.new(ioInstaller, rDependenciesUserChoices).main_loop
+        if (defined?(showModal) == nil)
+          require 'CommonTools/GUI'
+          CommonTools::GUI.initializeGUI
+        end
+        if (defined?($CT_URLCache) == nil)
+          require 'CommonTools/URLCache'
+          CommonTools::URLCache.initializeURLCache
+        end
+        # If an application is already running, use it
+        ensureWxApp do
+          showModal(DependenciesLoaderDialog, nil, ioInstaller, rDependenciesUserChoices) do |iModalResult, iDialog|
+            # Nothing to do
+          end
+        end
 
         return rDependenciesUserChoices
       end

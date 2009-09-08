@@ -17,41 +17,61 @@ module CommonTools
       # Parameters:
       # * *iLibRootDir* (_String_): The library root directory that will not appear in the logged stack messages
       # * *iBugTrackerURL* (_String_): The application's bug tracker URL, used to report bugs
-      def initialize(iLibRootDir, iBugTrackerURL)
+      # * *iSilentOutputs* (_Boolean_): Do we silent outputs (nothing sent to $stdout or $stderr) ? [optional = false]
+      def initialize(iLibRootDir, iBugTrackerURL, iSilentOutputs = false)
         @LibRootDir, @BugTrackerURL = iLibRootDir, iBugTrackerURL
         @DebugMode = false
         @LogFile = nil
         @ErrorsStack = nil
-        # Test if we can write to stdout
-        @ScreenOutput = true
-        begin
-          $stdout << "Launch Logging - stdout\n"
-        rescue Exception
-          # Redirect to a file if possible
+        @MessagesStack = nil
+        @ScreenOutput = (!iSilentOutputs)
+        @ScreenOutputErr = (!iSilentOutputs)
+        if (!iSilentOutputs)
+          # Test if we can write to stdout
           begin
-            lFile = File.open('./stdout', 'w')
-            $stdout.reopen(lFile)
             $stdout << "Launch Logging - stdout\n"
           rescue Exception
-            # Disable
-            @ScreenOutput = false
+            # Redirect to a file if possible
+            begin
+              redirectStdOutToFile('./stdout')
+              $stdout << "Launch Logging - stdout\n"
+            rescue Exception
+              # Disable
+              @ScreenOutput = false
+            end
           end
-        end
-        # Test if we can write to stderr
-        @ScreenOutputErr = true
-        begin
-          $stderr << "Launch Logging - stderr\n"
-        rescue Exception
-          # Redirect to a file if possible
+          # Test if we can write to stderr
           begin
-            lFileErr = File.open('./stderr', 'w')
-            $stderr.reopen(lFileErr)
             $stderr << "Launch Logging - stderr\n"
           rescue Exception
-            # Disable
-            @ScreenOutputErr = false
+            # Redirect to a file if possible
+            begin
+              redirectStdErrToFile('./stderr')
+              $stderr << "Launch Logging - stderr\n"
+            rescue Exception
+              # Disable
+              @ScreenOutputErr = false
+            end
           end
         end
+      end
+
+      # Redirect $stdout to a file
+      #
+      # Parameters:
+      # * *iFileName* (_String_): File name to redirect $stdout to
+      def redirectStdOutToFile(iFileName)
+        lFile = File.open(iFileName, 'w')
+        $stdout.reopen(lFile)
+      end
+
+      # Redirect $stderr to a file
+      #
+      # Parameters:
+      # * *iFileName* (_String_): File name to redirect $stderr to
+      def redirectStdErrToFile(iFileName)
+        lFile = File.open(iFileName, 'w')
+        $stderr.reopen(lFile)
       end
 
       # Set the debug mode
@@ -75,6 +95,16 @@ module CommonTools
       # * *iErrorsStack* (<em>list<String></em>): The stack of errors, or nil to unset it
       def setLogErrorsStack(iErrorsStack)
         @ErrorsStack = iErrorsStack
+      end
+
+      # Set the stack of the messages to fill.
+      # If set to nil, messages will be displayed as they appear.
+      # If set to a stack, messages will silently be added to the list.
+      #
+      # Parameters:
+      # * *iMessagesStack* (<em>list<String></em>): The stack of messages, or nil to unset it
+      def setLogMessagesStack(iMessagesStack)
+        @MessagesStack = iMessagesStack
       end
 
       # Log an exception
@@ -146,7 +176,7 @@ Details:
         if (@LogFile != nil)
           logFile(iMsg)
         end
-        # Display dialog only if we are not in a transaction
+        # Display dialog only if we are not redirecting messages to a stack
         if (@ErrorsStack == nil)
           if (defined?(showModal) == nil)
             # Use normal platform dependent message, if the platform has been initialized (otherwise, stick to $stderr)
@@ -180,20 +210,25 @@ Details:
         if (@LogFile != nil)
           logFile(iMsg)
         end
-        # Display dialog
-        if (defined?(showModal) == nil)
-          # Use normal platform dependent message, if the platform has been initialized (otherwise, stick to $stderr)
-          if (defined?($CT_Platform_Info) != nil)
-            $CT_Platform_Info.sendMsg(iMsg)
+        # Display dialog only if we are not redirecting messages to a stack
+        if (@MessagesStack == nil)
+          # Display dialog
+          if (defined?(showModal) == nil)
+            # Use normal platform dependent message, if the platform has been initialized (otherwise, stick to $stderr)
+            if (defined?($CT_Platform_Info) != nil)
+              $CT_Platform_Info.sendMsg(iMsg)
+            end
+          else
+            showModal(Wx::MessageDialog, nil,
+              iMsg,
+              :caption => 'Notification',
+              :style => Wx::OK|Wx::ICON_INFORMATION
+            ) do |iModalResult, iDialog|
+              # Nothing to do
+            end
           end
         else
-          showModal(Wx::MessageDialog, nil,
-            iMsg,
-            :caption => 'Notification',
-            :style => Wx::OK|Wx::ICON_INFORMATION
-          ) do |iModalResult, iDialog|
-            # Nothing to do
-          end
+          @MessagesStack << iMsg
         end
       end
 
@@ -289,8 +324,9 @@ Details:
     # Parameters:
     # * *iLibRootDir* (_String_): The library root directory that will not appear in the logged stack messages
     # * *iBugTrackerURL* (_String_): The application's bug tracker URL, used to report bugs
-    def self.initializeLogging(iLibRootDir, iBugTrackerURL)
-      $CT_Logging_Logger = CommonTools::Logging::Logger.new(iLibRootDir, iBugTrackerURL)
+    # * *iSilentOutputs* (_Boolean_): Do we silent outputs (nothing sent to $stdout or $stderr) ? [optional = false]
+    def self.initializeLogging(iLibRootDir, iBugTrackerURL, iSilentOutputs = false)
+      $CT_Logging_Logger = CommonTools::Logging::Logger.new(iLibRootDir, iBugTrackerURL, iSilentOutputs)
       # Add the module accessible from the Kernel
       Object.module_eval('include CommonTools::Logging')
     end
@@ -311,6 +347,16 @@ Details:
     # * *iErrorsStack* (<em>list<String></em>): The stack of errors, or nil to unset it
     def setLogErrorsStack(iErrorsStack)
       $CT_Logging_Logger.setLogErrorsStack(iErrorsStack)
+    end
+
+    # Set the stack of the messages to fill.
+    # If set to nil, messages will be displayed as they appear.
+    # If set to a stack, messages will silently be added to the list.
+    #
+    # Parameters:
+    # * *iMessagesStack* (<em>list<String></em>): The stack of messages, or nil to unset it
+    def setLogMessagesStack(iMessagesStack)
+      $CT_Logging_Logger.setLogMessagesStack(iMessagesStack)
     end
 
     # Log an exception

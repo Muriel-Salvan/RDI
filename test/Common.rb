@@ -5,6 +5,13 @@
 
 # This file is intended to be required by every test case.
 
+require 'CommonTools/Logging.rb'
+CommonTools::Logging::initializeLogging("#{File.dirname(__FILE__)}/../lib", 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', true)
+require 'CommonTools/URLAccess.rb'
+CommonTools::URLAccess::initializeURLAccess
+require 'CommonTools/Platform.rb'
+CommonTools::Platform::initializePlatform
+
 require 'tmpdir'
 require 'test/unit'
 require 'rdi/rdi.rb'
@@ -110,6 +117,11 @@ module RDI
       def setup
         @RepositoryDir = File.expand_path("#{File.dirname(__FILE__)}/Repository")
         @Installer = nil
+        # Silent user interaction of logging
+        @MessagesStack = []
+        setLogMessagesStack(@MessagesStack)
+        @ErrorsStack = []
+        setLogErrorsStack(@ErrorsStack)
       end
 
       # Define a dummy test case to avoid errors during run of this class
@@ -434,6 +446,8 @@ module RDI
           lActionsStr << "#{lIdxAction} - #{lStr}"
           lIdxAction += 1
         end
+        # Remove the logging silent mode before displaying
+        setLogMessagesStack(nil)
         logMsg "Please perform the following:\n#{lActionsStr.join("\n")}"
       end
 

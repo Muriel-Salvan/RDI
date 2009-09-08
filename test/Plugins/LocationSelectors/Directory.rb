@@ -3,8 +3,6 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
-require 'Plugins/WxEnv'
-
 module RDI
 
   module Test
@@ -15,8 +13,6 @@ module RDI
 
         include RDITestCase_LocationSelectors
 
-        include RDI::Test::RDIWx
-
         # Constructor
         def setup
           super
@@ -25,7 +21,8 @@ module RDI
 
         # Install dependencies
         def installDep_SimpleWxGUI
-          installTestWxEnv
+          require 'Plugins/WxEnv'
+          RDI::Test::RDIWx.installTestWxEnv
         end
 
       end

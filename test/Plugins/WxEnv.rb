@@ -16,11 +16,11 @@ module RDI
       # Therefore the solution found is to use Threads:
       # * Create 1 thread that will run the main_loop
       # * Make the on_init method process a kind of events loop that will be fed by test usecases
-      def installTestWxEnv
+      def self.installTestWxEnv
         lWxRubyInstallLocation = "#{Dir.tmpdir}/RDITest/WxRubyTestInstall"
         if (defined?($RDI_Test_WxApp) == nil)
           require 'rdi/Plugins/WxRubyDepDesc.rb'
-          RDI::Installer.new(@RepositoryDir).ensureDependencies(
+          RDI::Installer.new(lWxRubyInstallLocation).ensureDependencies(
             [ ::RDI::getWxRubyDepDesc ],
             {
               :AutoInstall => DEST_OTHER,
@@ -32,36 +32,7 @@ module RDI
           require 'wx'
           setGUIForDialogs(CommonTools::Logging::Logger::GUI_WX)
           # Create the main application
-          RDI::Test::RDIWx.module_eval('
-      # The application that will run tests
-      class TestApp < Wx::App
-
-        # Exit flag
-        #   Boolean
-        attr_accessor :Exit
-
-        # Ready flag
-        #   Boolean
-        attr_reader :Ready
-
-        # Constructor
-        def initialize
-          super
-          @Exit = false
-          @Ready = false
-        end
-
-        # Init
-        def on_init
-          while (!@Exit)
-            @Ready = true
-            sleep(1)
-          end
-          return false
-        end
-
-      end
-')
+          require 'Plugins/WxEnvApp'
           $RDI_Test_WxApp = TestApp.new
           # Create the thread that will run the application
           Thread.new do
@@ -74,7 +45,7 @@ module RDI
         else
           # It is already loaded.
           # Add the direcotry to the Gem path.
-          RDI::Installer.new(@RepositoryDir).accessPlugin('ContextModifiers', 'GemPath') do |ioPlugin|
+          RDI::Installer.new(lWxRubyInstallLocation).accessPlugin('ContextModifiers', 'GemPath') do |ioPlugin|
             ioPlugin.addLocationToContext(lWxRubyInstallLocation)
           end
         end

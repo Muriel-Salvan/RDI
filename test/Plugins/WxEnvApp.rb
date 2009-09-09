@@ -29,6 +29,14 @@ module RDI
 
         # Init
         def on_init
+          # Make sure other threads will be called during looping.
+          # We have to use this workaround, as WxRuby's threads are different than Ruby's threads
+          lThreadsTimer = Wx::Timer.new(self, 42)
+          evt_timer(42) do
+            Thread.pass
+          end
+          # Trigger every 100 ms
+          lThreadsTimer.start(100)
           while (!@Exit)
             @Ready = true
             sleep(1)

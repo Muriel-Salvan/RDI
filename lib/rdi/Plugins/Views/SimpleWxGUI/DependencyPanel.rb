@@ -29,7 +29,7 @@ module RDI
           # Create components
 
           # The locate part
-          @RBLocate = Wx::RadioButton.new(self, Wx::ID_ANY, 'Locate')
+          @RBLocate = Wx::RadioButton.new(self, Wx::ID_ANY, 'Locate', :style => Wx::RB_GROUP)
           # The Testers' statuses
           # The list of [ StaticBitmap, StaticText ] used to represent Testers' state
           # list< [ Wx::StaticBitmap, Wx::StaticText ] >
@@ -57,9 +57,27 @@ module RDI
           # The list of installers info
           # list< [ RadioButton, StaticBitmap, list< RadioButton > ] >
           @InstallerComponents = []
+          # First, create the installers radio buttons before their respective destinations radio buttons.
+          # This is done this way to ensure correct radio buttons grouping
           @DepUserChoice.DepDesc.Installers.each do |iInstallerInfo|
             iInstallerName, iInstallerContent, iContextModifiers = iInstallerInfo
-            lDestinationComponents = []
+            lRBInstaller = nil
+            if (@InstallerComponents.empty?)
+              # First item of the group
+              lRBInstaller = Wx::RadioButton.new(self, Wx::ID_ANY, "#{iInstallerName} - #{iInstallerContent}", :style => Wx::RB_GROUP)
+            else
+              lRBInstaller = Wx::RadioButton.new(self, Wx::ID_ANY, "#{iInstallerName} - #{iInstallerContent}")
+            end
+            @InstallerComponents << [
+              lRBInstaller,
+              Wx::StaticBitmap.new(self, Wx::ID_ANY, Wx::Bitmap.new),
+              []
+            ]
+          end
+          lIdxInstaller = 0
+          @DepUserChoice.DepDesc.Installers.each do |iInstallerInfo|
+            iInstallerName, iInstallerContent, iContextModifiers = iInstallerInfo
+            lDestinationComponents = @InstallerComponents[lIdxInstaller][2]
             @Installer.accessPlugin('Installers', iInstallerName) do |iPlugin|
               iPlugin.PossibleDestinations.each do |iDestInfo|
                 iFlavour, iLocation = iDestInfo
@@ -81,14 +99,15 @@ module RDI
                   logBug "Unknown flavour ID: #{iFlavour}"
                   lFlavourText = 'Unknown'
                 end
-                lDestinationComponents << Wx::RadioButton.new(self, Wx::ID_ANY, "#{lFlavourText} - #{lDestLocation}")
+                if (lDestinationComponents.empty?)
+                  # First destination radio button
+                  lDestinationComponents << Wx::RadioButton.new(self, Wx::ID_ANY, "#{lFlavourText} - #{lDestLocation}", :style => Wx::RB_GROUP)
+                else
+                  lDestinationComponents << Wx::RadioButton.new(self, Wx::ID_ANY, "#{lFlavourText} - #{lDestLocation}")
+                end
               end
             end
-            @InstallerComponents << [
-              Wx::RadioButton.new(self, Wx::ID_ANY, "#{iInstallerName} - #{iInstallerContent}"),
-              Wx::StaticBitmap.new(self, Wx::ID_ANY, Wx::Bitmap.new),
-              lDestinationComponents
-            ]
+            lIdxInstaller += 1
           end
 
           # Put them into sizers

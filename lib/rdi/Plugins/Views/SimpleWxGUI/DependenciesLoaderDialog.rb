@@ -50,7 +50,7 @@ module RDI
           lNotebookImageList = Wx::ImageList.new(16, 16)
           @NBDeps.image_list = lNotebookImageList
           # Make this image list driven by a manager
-          @NBImageListManager = CommonTools::GUI::ImageListManager.new(lNotebookImageList, 16, 16)
+          @NBImageListManager = RUtilAnts::GUI::ImageListManager.new(lNotebookImageList, 16, 16)
 
           # Create the list of Panels displaying each dependency
           @DependencyPanels = []

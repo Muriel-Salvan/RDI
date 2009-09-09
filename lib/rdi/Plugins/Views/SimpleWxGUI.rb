@@ -37,12 +37,12 @@ module RDI
         # Display the dialog
         require 'rdi/Plugins/Views/SimpleWxGUI/DependenciesLoaderDialog'
         if (defined?(showModal) == nil)
-          require 'CommonTools/GUI'
-          CommonTools::GUI.initializeGUI
+          require 'RUtilAnts/GUI'
+          RUtilAnts::GUI.initializeGUI
         end
         if (defined?($CT_URLCache) == nil)
-          require 'CommonTools/URLCache'
-          CommonTools::URLCache.initializeURLCache
+          require 'RUtilAnts/URLCache'
+          RUtilAnts::URLCache.initializeURLCache
         end
         # If an application is already running, use it
         ensureWxApp do

@@ -5,7 +5,7 @@
 
 require 'tmpdir'
 require 'fileutils'
-require 'CommonTools/Plugins.rb'
+require 'RUtilAnts/Plugins.rb'
 
 module RDI
 
@@ -70,7 +70,7 @@ module RDI
       @TempDir = "#{@TempRootDir}/#{RUBY_PLATFORM}"
       FileUtils::mkdir_p(@TempDir)
       # Initialize the plugins manager
-      @Plugins = CommonTools::Plugins::PluginsManager.new
+      @Plugins = RUtilAnts::Plugins::PluginsManager.new
       # Get the RDI root directory for libraries
       # Get all plugins
       @Plugins.parsePluginsFromDir('ContextModifiers', "#{@RDILibDir}/Plugins/ContextModifiers", 'RDI::ContextModifiers') do |ioPlugin|

@@ -5,12 +5,12 @@
 
 # This file is intended to be required by every test case.
 
-require 'CommonTools/Logging.rb'
-CommonTools::Logging::initializeLogging("#{File.dirname(__FILE__)}/../lib", 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', true)
-require 'CommonTools/URLAccess.rb'
-CommonTools::URLAccess::initializeURLAccess
-require 'CommonTools/Platform.rb'
-CommonTools::Platform::initializePlatform
+require 'RUtilAnts/Logging.rb'
+RUtilAnts::Logging::initializeLogging("#{File.dirname(__FILE__)}/../lib", 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', true)
+require 'RUtilAnts/URLAccess.rb'
+RUtilAnts::URLAccess::initializeURLAccess
+require 'RUtilAnts/Platform.rb'
+RUtilAnts::Platform::initializePlatform
 
 require 'tmpdir'
 require 'test/unit'

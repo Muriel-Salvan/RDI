@@ -30,7 +30,7 @@ module RDI
           # TODO: Re-enable it when WxRuby will be more stable
           GC.disable
           require 'wx'
-          setGUIForDialogs(CommonTools::Logging::Logger::GUI_WX)
+          setGUIForDialogs(RUtilAnts::Logging::Logger::GUI_WX)
           # Create the main application
           require 'Plugins/WxEnvApp'
           $RDI_Test_WxApp = TestApp.new

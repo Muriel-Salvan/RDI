@@ -31,7 +31,7 @@ module RDI
 
         # For each required file, test that it exists among $LOAD_PATH
         iContent.each do |iDLLName|
-          $CT_Platform_Info.getSystemLibsPath.each do |iDir|
+          $rUtilAnts_Platform_Info.getSystemLibsPath.each do |iDir|
             rSuccess = File.exists?("#{iDir}/#{iDLLName}")
             if (rSuccess)
               # We found it. Don't try other paths.

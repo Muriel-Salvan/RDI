@@ -31,8 +31,8 @@ module RDI
 
         # For each required file, test that it exists among PATH
         iContent.each do |iExeName|
-          $CT_Platform_Info.getSystemExePath.each do |iDir|
-            rSuccess = (!Dir.glob(File.expand_path("#{iDir}/#{iExeName}{,#{$CT_Platform_Info.getDiscreteExeExtensions.join(',')}}")).empty?)
+          $rUtilAnts_Platform_Info.getSystemExePath.each do |iDir|
+            rSuccess = (!Dir.glob(File.expand_path("#{iDir}/#{iExeName}{,#{$rUtilAnts_Platform_Info.getDiscreteExeExtensions.join(',')}}")).empty?)
             if (rSuccess)
               # We found it. Don't try other paths.
               break

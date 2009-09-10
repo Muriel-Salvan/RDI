@@ -44,7 +44,7 @@ module RDI
       # * _Boolean_: Is the location already present ?
       def isLocationInContext?(iLocation)
         # * *iLocation* (_String_): Directory
-        return $CT_Platform_Info.getSystemLibsPath.include?(iLocation)
+        return $rUtilAnts_Platform_Info.getSystemLibsPath.include?(iLocation)
       end
 
       # Add a given location to the context
@@ -53,7 +53,7 @@ module RDI
       # * *iLocation* (_Object_): Location to add
       def addLocationToContext(iLocation)
         # * *iLocation* (_String_): Directory
-        $CT_Platform_Info.setSystemLibsPath($CT_Platform_Info.getSystemLibsPath + [ iLocation ])
+        $rUtilAnts_Platform_Info.setSystemLibsPath($rUtilAnts_Platform_Info.getSystemLibsPath + [ iLocation ])
       end
 
       # Remove a given location from the context
@@ -62,7 +62,7 @@ module RDI
       # * *iLocation* (_Object_): Location to remove
       def removeLocationFromContext(iLocation)
         # * *iLocation* (_String_): Directory
-        $CT_Platform_Info.setSystemLibsPath($CT_Platform_Info.getSystemLibsPath - [ iLocation ])
+        $rUtilAnts_Platform_Info.setSystemLibsPath($rUtilAnts_Platform_Info.getSystemLibsPath - [ iLocation ])
       end
 
     end

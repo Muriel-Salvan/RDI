@@ -29,12 +29,12 @@ module RDI
 
         # Install the test content
         def installTestContent
-          $CT_Platform_Info.setSystemLibsPath($CT_Platform_Info.getSystemLibsPath + [ "#{@RepositoryDir}/Libraries" ])
+          $rUtilAnts_Platform_Info.setSystemLibsPath($rUtilAnts_Platform_Info.getSystemLibsPath + [ "#{@RepositoryDir}/Libraries" ])
         end
 
         # Uninstall the test content
         def uninstallTestContent
-          $CT_Platform_Info.setSystemLibsPath($CT_Platform_Info.getSystemLibsPath - [ "#{@RepositoryDir}/Libraries" ])
+          $rUtilAnts_Platform_Info.setSystemLibsPath($rUtilAnts_Platform_Info.getSystemLibsPath - [ "#{@RepositoryDir}/Libraries" ])
         end
 
       end

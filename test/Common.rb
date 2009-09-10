@@ -135,8 +135,8 @@ module RDI
       # * *CodeBlock*: The code called once the application is ready
       def setupAppDir
         # Get an image of the context, as we will put it back after the testing
-        lSystemPath = $CT_Platform_Info.getSystemExePath.clone
-        lLibsPath = $CT_Platform_Info.getSystemLibsPath.clone
+        lSystemPath = $rUtilAnts_Platform_Info.getSystemExePath.clone
+        lLibsPath = $rUtilAnts_Platform_Info.getSystemLibsPath.clone
         lLoadPath = $LOAD_PATH.clone
         lGemsPath = nil
         if (defined?(Gem) != nil)
@@ -157,8 +157,8 @@ module RDI
         # Remove the temporary application root dir
         FileUtils::rm_rf(lAppRootDir)
         # Put back the context
-        $CT_Platform_Info.setSystemExePath(lSystemPath)
-        $CT_Platform_Info.setSystemLibsPath(lLibsPath)
+        $rUtilAnts_Platform_Info.setSystemExePath(lSystemPath)
+        $rUtilAnts_Platform_Info.setSystemLibsPath(lLibsPath)
         $LOAD_PATH.replace(lLoadPath)
         if (defined?(Gem) != nil)
           Gem.clear_paths

@@ -29,12 +29,12 @@ module RDI
 
         # Install the test content
         def installTestContent
-          $CT_Platform_Info.setSystemExePath($CT_Platform_Info.getSystemExePath + [ "#{@RepositoryDir}/Binaries" ])
+          $rUtilAnts_Platform_Info.setSystemExePath($rUtilAnts_Platform_Info.getSystemExePath + [ "#{@RepositoryDir}/Binaries" ])
         end
 
         # Uninstall the test content
         def uninstallTestContent
-          $CT_Platform_Info.setSystemExePath($CT_Platform_Info.getSystemExePath - [ "#{@RepositoryDir}/Binaries" ])
+          $rUtilAnts_Platform_Info.setSystemExePath($rUtilAnts_Platform_Info.getSystemExePath - [ "#{@RepositoryDir}/Binaries" ])
         end
 
       end

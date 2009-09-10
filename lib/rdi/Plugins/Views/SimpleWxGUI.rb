@@ -40,7 +40,7 @@ module RDI
           require 'RUtilAnts/GUI'
           RUtilAnts::GUI.initializeGUI
         end
-        if (defined?($CT_URLCache) == nil)
+        if (defined?($rUtilAnts_URLCache) == nil)
           require 'RUtilAnts/URLCache'
           RUtilAnts::URLCache.initializeURLCache
         end

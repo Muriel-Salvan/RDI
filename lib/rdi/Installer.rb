@@ -336,7 +336,7 @@ module RDI
     # * *CodeBlock*: The code called when the plugin is found:
     # ** *ioPlugin* (_Object_): The corresponding plugin
     def accessPlugin(iCategoryName, iPluginName)
-      @Plugins.accessPlugin(iCategoryName, iPluginName, false, self) do |ioPlugin|
+      @Plugins.accessPlugin(iCategoryName, iPluginName, :RDIInstaller => self) do |ioPlugin|
         yield(ioPlugin)
       end
     end
@@ -473,7 +473,10 @@ module RDI
         # Now we try to select 1 view that is accessible without any dependency installation
         lPlugin = nil
         lViewsList.each do |iViewName|
-          lPlugin = @Plugins.getPluginInstance('Views', iViewName, true, self)
+          lPlugin = @Plugins.getPluginInstance('Views', iViewName,
+            :OnlyIfExtDepsResolved => true,
+            :RDIInstaller => self
+          )
           if (lPlugin != nil)
             # Found one
             logDebug "Executing View #{iViewName}"
@@ -483,7 +486,9 @@ module RDI
         if (lPlugin == nil)
           # Now we try to install them
           lViewsList.each do |iViewName|
-            lPlugin = @Plugins.getPluginInstance('Views', iViewName, false, self)
+            lPlugin = @Plugins.getPluginInstance('Views', iViewName,
+              :RDIInstaller => self
+            )
             if (lPlugin != nil)
               # Found one
               logDebug "Executing View #{iViewName}"

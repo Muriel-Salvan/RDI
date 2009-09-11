@@ -50,6 +50,7 @@ module RDI
           (@@MainInstallerInstance == nil))
         @@MainInstallerInstance = self
       end
+      @DefaultOptions = {}
       @RDILibDir = File.dirname(__FILE__)
       @ExtDir = "#{iAppRootDir}/ext/#{RUBY_PLATFORM}"
       # Initialize all other standard directories
@@ -94,6 +95,18 @@ module RDI
       end
     end
 
+    # Set default options for ensuring dependencies
+    #
+    # Parameters:
+    # * *iParameters* (<em>map<Symbol,Object></em>): Additional parameters:
+    # ** *:AutoInstall* (_Integer_): When set to one of the DEST_* constants, RDI installs automatically to a location flagged with this constant, without the need of user choice [optional = nil]
+    # ** *:AutoInstallLocation* (_Object_): Used to provide the location to install to, when :AutoInstall is set to DEST_OTHER only.
+    # ** *:PossibleContextModifiers* (<em>map<String,list<list<[String,Object]>>></em>): The list of possible context modifiers sets to try, per dependency ID [optional = nil]
+    # ** *:PreferredViews* (<em>list<String></em>): The list of preferred views [optional = nil]
+    def setDefaultOptions(iParameters)
+      @DefaultOptions = iParameters
+    end
+
     # The main method: ensure that a dependency is accessible
     #
     # Parameters:
@@ -114,10 +127,22 @@ module RDI
       rIgnoredDeps = []
       rUnresolvedDeps = []
 
-      lAutoInstall = iParameters[:AutoInstall]
-      lAutoInstallLocation = iParameters[:AutoInstallLocation]
-      lPossibleContextModifiers = iParameters[:PossibleContextModifiers]
-      lPreferredViews = iParameters[:PreferredViews]
+      lAutoInstall = @DefaultOptions[:AutoInstall]
+      if (iParameters.has_key?(:AutoInstall))
+        lAutoInstall = iParameters[:AutoInstall]
+      end
+      lAutoInstallLocation = @DefaultOptions[:AutoInstallLocation]
+      if (iParameters.has_key?(:AutoInstallLocation))
+        lAutoInstallLocation = iParameters[:AutoInstallLocation]
+      end
+      lPossibleContextModifiers = @DefaultOptions[:PossibleContextModifiers]
+      if (iParameters.has_key?(:PossibleContextModifiers))
+        lPossibleContextModifiers = iParameters[:PossibleContextModifiers]
+      end
+      lPreferredViews = @DefaultOptions[:PreferredViews]
+      if (iParameters.has_key?(:PreferredViews))
+        lPreferredViews = iParameters[:PreferredViews]
+      end
       # First, test if the dependencies are already accessible
       lDepsToResolve = []
       iDepDescList.each do |iDepDesc|

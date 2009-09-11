@@ -131,9 +131,9 @@ module RDI
               end
             end
             lIdxImage = @NBImageListManager.getImageIndex(lIconName) do
-              lIcon = getBitmapFromURL(lIconName)
+              lIcon, lError = getBitmapFromURL(lIconName)
               if (lIcon == nil)
-                lIcon = getBitmapFromURL("#{@IconsDir}/Dependency.png")
+                lIcon, lError = getBitmapFromURL("#{@IconsDir}/Dependency.png")
               end
               next lIcon
             end

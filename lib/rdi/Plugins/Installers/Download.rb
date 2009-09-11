@@ -38,6 +38,7 @@ module RDI
 
         # Download the URL
         # The URL can be a zip file, a targz, a direct file ...
+        # Don't use URL caching.
         accessFile(iContent, { :LocalFileAccess => true }) do |iLocalFileName, iBaseName|
           case File.extname(iLocalFileName).upcase
           when '.ZIP'

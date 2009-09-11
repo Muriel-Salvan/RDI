@@ -151,7 +151,6 @@ module RDI
                       lExit = true
                       break
                     when ACTION_SELECT_AFFECTING_CONTEXTMODIFIER
-                      # TODO
                       lCMName, lLocation = iParameters
                       # Click on the button named "Change #{lCMName}"
                       # TODO (wxRuby): Make Window#find_window_by_label work (little typo)

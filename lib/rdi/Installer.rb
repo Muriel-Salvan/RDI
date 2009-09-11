@@ -21,10 +21,6 @@ module RDI
 
     # == Public API ==
 
-    # The application root dir
-    #   String
-    attr_reader :AppRootDir
-
     # The local ext dir (platform specific, local to the application)
     #   String
     attr_reader :ExtDir
@@ -49,10 +45,14 @@ module RDI
     #
     # Parameters:
     # * *iAppRootDir* (_String_): Application's root directory
-    def initialize(iAppRootDir)
-      @AppRootDir = iAppRootDir
+    # * *iMainInstance* (_Boolean_): Is this instance supposed to be the main one if none was defined before ? [optional = true]
+    def initialize(iAppRootDir, iMainInstance = true)
+      if ((iMainInstance) and
+          (@@MainInstallerInstance == nil))
+        @@MainInstallerInstance = self
+      end
       @RDILibDir = File.dirname(__FILE__)
-      @ExtDir = "#{@AppRootDir}/ext/#{RUBY_PLATFORM}"
+      @ExtDir = "#{iAppRootDir}/ext/#{RUBY_PLATFORM}"
       # Initialize all other standard directories
       case RUBY_PLATFORM
       when 'i386-mswin32'
@@ -368,9 +368,21 @@ module RDI
       @Plugins.registerNewPlugin(iCategoryName, iPluginName, iFileName, iDesc, iClassName, iInitCodeBlock)
     end
 
+    # Get the Main instance, if there is one defined, or nil otherwise
+    #
+    # Return:
+    # * _Installer_: The main instance, or nil if none.
+    def self.getMainInstance
+      return @@MainInstallerInstance
+    end
+
     # == Private API ==
 
     private
+
+    # The main RDI Installer instance
+    #   Installer
+    @@MainInstallerInstance = nil
 
     # Get the missing dependencies after trying previously applied context modifiers
     #

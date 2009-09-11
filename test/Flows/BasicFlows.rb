@@ -23,11 +23,12 @@ module RDI
         end
 
         # Test that we install dependencies correctly
-        def testInstallDep_Local
+        def testInstallDep
           setupAppDir do
             # Ask the installer to install this dependency in the local directory
-            assert_equal(nil, @Installer.installDependency(getSimpleDesc, 0, @Installer.AppRootDir))
-            assert(File.exists?("#{@Installer.AppRootDir}/DummyBinary"))
+            assert_equal(nil, @Installer.installDependency(getSimpleDesc, 0, @Installer.TempDir))
+            assert(File.exists?("#{@Installer.TempDir}/DummyBinary"))
+            File.unlink("#{@Installer.TempDir}/DummyBinary")
           end
         end
 
@@ -36,8 +37,9 @@ module RDI
           setupAppDir do
             # Ask the installer to install this dependency in the local directory
             lDesc = getSimpleDesc
-            @Installer.installDependency(lDesc, 0, @Installer.AppRootDir)
+            @Installer.installDependency(lDesc, 0, @Installer.TempDir)
             assert_equal(true, @Installer.testDependency(lDesc))
+            File.unlink("#{@Installer.TempDir}/DummyBinary")
           end
         end
 

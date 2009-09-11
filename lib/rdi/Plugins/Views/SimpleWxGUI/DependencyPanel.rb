@@ -242,9 +242,9 @@ module RDI
             iSBStatus, iSTTitle = iTesterComponentsList
             # Check if the Tester is resolved
             if (@DepUserChoice.ResolvedTesters.has_key?(lIdxTester))
-              iSBStatus.bitmap = getBitmapFromURL("#{@IconsDir}/ValidOK.png")
+              iSBStatus.bitmap, lError = getBitmapFromURL("#{@IconsDir}/ValidOK.png")
             else
-              iSBStatus.bitmap = getBitmapFromURL("#{@IconsDir}/ValidKO.png")
+              iSBStatus.bitmap, lError = getBitmapFromURL("#{@IconsDir}/ValidKO.png")
             end
             lIdxTester += 1
           end

@@ -5,7 +5,6 @@
 
 require 'tmpdir'
 require 'fileutils'
-require 'RUtilAnts/Plugins.rb'
 
 module RDI
 
@@ -70,6 +69,9 @@ module RDI
       @TempDir = "#{@TempRootDir}/#{RUBY_PLATFORM}"
       FileUtils::mkdir_p(@TempDir)
       # Initialize the plugins manager
+      if (defined?(RUtilAnts::Plugins::PluginsManager) == nil)
+        require 'rUtilAnts/Plugins'
+      end
       @Plugins = RUtilAnts::Plugins::PluginsManager.new
       # Get the RDI root directory for libraries
       # Get all plugins

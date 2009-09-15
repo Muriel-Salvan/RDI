@@ -500,7 +500,7 @@ module RDI
         # Now we try to select 1 view that is accessible without any dependency installation
         lPlugin = nil
         lViewsList.each do |iViewName|
-          lPlugin = @Plugins.getPluginInstance('Views', iViewName,
+          lPlugin, lError = @Plugins.getPluginInstance('Views', iViewName,
             :OnlyIfExtDepsResolved => true,
             :RDIInstaller => self
           )
@@ -513,7 +513,7 @@ module RDI
         if (lPlugin == nil)
           # Now we try to install them
           lViewsList.each do |iViewName|
-            lPlugin = @Plugins.getPluginInstance('Views', iViewName,
+            lPlugin, lError = @Plugins.getPluginInstance('Views', iViewName,
               :RDIInstaller => self
             )
             if (lPlugin != nil)

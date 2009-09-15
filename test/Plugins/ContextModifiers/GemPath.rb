@@ -18,7 +18,7 @@ module RDI
           super
           @ContextModifierPluginName = 'GemPath'
           # Install Gems if needed
-          require 'rdi/Plugins/RubyGemsDepDesc.rb'
+          require 'rdi/Plugins/RubyGemsDepDesc'
           setupAppDir do
             @Installer.ensureDependencies( [
               # RubyGems

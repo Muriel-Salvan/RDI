@@ -279,6 +279,8 @@ module RDI
             end
             lIdxInstaller += 1
           end
+          # Fit again, as some labels might have changed
+          self.fit
           # Notify refresh
           @NotifierControl.notifyRefresh(self)
         end

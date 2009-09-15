@@ -3,7 +3,7 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
-require 'rdi/Plugins/WxRubyDepDesc.rb'
+require 'rdi/Plugins/WxRubyDepDesc'
 
 {
   :Dependencies => [

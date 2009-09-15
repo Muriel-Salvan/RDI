@@ -8,7 +8,7 @@
 lTestDir = File.dirname(__FILE__)
 $LOAD_PATH << lTestDir
 
-require 'Common.rb'
+require 'Common'
 
 (
   Dir.glob("#{lTestDir}/Flows/*.rb") +

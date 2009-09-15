@@ -19,7 +19,7 @@ module RDI
       def self.installTestWxEnv
         lWxRubyInstallLocation = "#{Dir.tmpdir}/RDITest/WxRubyTestInstall"
         if (defined?($RDI_Test_WxApp) == nil)
-          require 'rdi/Plugins/WxRubyDepDesc.rb'
+          require 'rdi/Plugins/WxRubyDepDesc'
           RDI::Installer.new(lWxRubyInstallLocation).ensureDependencies(
             [ ::RDI::getWxRubyDepDesc ],
             {

@@ -5,16 +5,16 @@
 
 # This file is intended to be required by every test case.
 
-require 'RUtilAnts/Logging.rb'
+require 'RUtilAnts/Logging'
 RUtilAnts::Logging::initializeLogging("#{File.dirname(__FILE__)}/../lib", 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', true)
-require 'RUtilAnts/URLAccess.rb'
+require 'RUtilAnts/URLAccess'
 RUtilAnts::URLAccess::initializeURLAccess
-require 'RUtilAnts/Platform.rb'
+require 'RUtilAnts/Platform'
 RUtilAnts::Platform::initializePlatform
 
 require 'tmpdir'
 require 'test/unit'
-require 'rdi/rdi.rb'
+require 'rdi/rdi'
 
 module RDI
 

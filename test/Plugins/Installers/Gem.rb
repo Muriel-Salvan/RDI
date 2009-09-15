@@ -21,7 +21,7 @@ module RDI
           super
           @InstallerPluginName = 'Gem'
           # Install Gems if needed
-          require 'rdi/Plugins/RubyGemsDepDesc.rb'
+          require 'rdi/Plugins/RubyGemsDepDesc'
           setupAppDir do
             @Installer.ensureDependencies( [
               # RubyGems

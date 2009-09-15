@@ -170,7 +170,7 @@ module RDI
       # * *iIdxInstaller* (_Integer_): The Installer's index
       # * *iIdxDestination* (_Integer_): The destination's index
       def setInstaller(iIdxInstaller, iIdxDestination)
-        @Ignore = true
+        @Ignore = false
         @Locate = false
         @IdxInstaller = iIdxInstaller
         @IdxDestination = iIdxDestination

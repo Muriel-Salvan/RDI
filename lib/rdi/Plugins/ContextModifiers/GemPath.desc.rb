@@ -3,7 +3,7 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
-require 'rdi/Plugins/RubyGemsDepDesc.rb'
+require 'rdi/Plugins/RubyGemsDepDesc'
 
 {
   :Dependencies => [

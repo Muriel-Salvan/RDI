@@ -15,7 +15,7 @@ module RDI
       # * <em>list<[Integer,Object]></em>: The list of possible destinations and their corresponding installation location (or location selector name for DEST_OTHER)
       def getPossibleDestinations
         return [
-          [ DEST_LOCAL, @Installer.ExtDir ],
+          [ DEST_LOCAL, "#{@Installer.ExtDir}/LocalGems" ],
           [ DEST_SYSTEM, ::Gem.dir ],
           [ DEST_USER, ::Gem.user_dir ],
           [ DEST_TEMP, @Installer.TempDir ],
@@ -47,6 +47,8 @@ module RDI
           if ($!.exit_code != 0)
             rError = $!
           else
+            # Refresh as otherwise, Gems installed in paths already part of Gem.path will still not be seen by Gem.find_files.
+            ::Gem.refresh
             ioInstallEnv[:InstallDir] = iLocation
           end
         rescue Exception

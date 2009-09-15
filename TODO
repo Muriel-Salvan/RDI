@@ -13,3 +13,4 @@
 ** In the dependenciesloader dialog, test internet connection before proposing installing Gems and Dlls.
 ** Implement a progression dialog upon installation
 ** Give the possiblity to provide simple APIs that will handle most common dependency descriptions
+** Add buttons/combos 'Ignore All' 'Install All local' 'Install All system'... in the SimpleWxGUI.

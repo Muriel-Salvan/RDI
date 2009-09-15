@@ -15,7 +15,7 @@ module RDI
       # * <em>list<[Integer,Object]></em>: The list of possible destinations and their corresponding installation location (or location selector name for DEST_OTHER)
       def getPossibleDestinations
         return [
-          [ DEST_LOCAL, @Installer.ExtDir ],
+          [ DEST_LOCAL, "#{@Installer.ExtDir}/Downloads" ],
           [ DEST_SYSTEM, @Installer.SystemDir ],
           [ DEST_USER, @Installer.UserDir ],
           [ DEST_TEMP, @Installer.TempDir ],
@@ -44,17 +44,20 @@ module RDI
           when '.ZIP'
             # Unzip before
             rError = extractZipFile(iLocalFileName, iLocation)
+            if (rError != nil)
+              rError = RuntimeError.new("Error while unzipping from #{iLocalFileName} to #{iLocation}:\n#{rError}")
+            end
           # TODO: Handle targz, bz...
           else
             # Just copy
             begin
               FileUtils::mkdir_p(iLocation)
               FileUtils::cp(iLocalFileName, "#{iLocation}/#{File.basename(iLocalFileName)}")
-              ioInstallEnv[:InstallDir] = iLocation
             rescue Exception
               rError = $!
             end
           end
+          ioInstallEnv[:InstallDir] = iLocation
         end
 
         return rError

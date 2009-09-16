@@ -95,7 +95,8 @@ module RDI
       end
     end
 
-    # Set default options for ensuring dependencies
+    # Set default options for ensuring dependencies.
+    # Options not specified in the given ones will not be overriden. To cancel existing values, set them explicitly to nil.
     #
     # Parameters:
     # * *iParameters* (<em>map<Symbol,Object></em>): Additional parameters:
@@ -104,7 +105,44 @@ module RDI
     # ** *:PossibleContextModifiers* (<em>map<String,list<list<[String,Object]>>></em>): The list of possible context modifiers sets to try, per dependency ID [optional = nil]
     # ** *:PreferredViews* (<em>list<String></em>): The list of preferred views [optional = nil]
     def setDefaultOptions(iParameters)
-      @DefaultOptions = iParameters
+      @DefaultOptions.merge!(iParameters)
+    end
+
+    # Get the default location used by a given Installer for a given flavour
+    #
+    # Parameters:
+    # * *iInstallerName* (_String_): Name of the Installer plugin
+    # * *iFlavour* (_Integer_): Flavour required
+    # Return:
+    # * _Object_: Corresponding location, or LocationSelector name in case of DEST_OTHER flavour, or nil if none.
+    def getDefaultInstallLocation(iInstallerName, iFlavour)
+      rLocation = nil
+
+      accessPlugin('Installers', iInstallerName) do |iPlugin|
+        iPlugin.PossibleDestinations.each do |iDestInfo|
+          iDestFlavour, iDestLocation = iDestInfo
+          if (iDestFlavour == iFlavour)
+            rLocation = iDestLocation
+            break
+          end
+        end
+      end
+
+      return rLocation
+    end
+
+    # Ensure a given Location for a given ContextModifier
+    #
+    # Parameters:
+    # * *iContextModifierName* (_String_): Name of the context modifier
+    # * *iLocation* (_Location_): Location to add
+    def ensureLocationInContext(iContextModifierName, iLocation)
+      accessPlugin('ContextModifiers', iContextModifierName) do |ioPlugin|
+        if (!ioPlugin.isLocationInContext?(iLocation))
+          logDebug "Add Location #{iLocation} to #{iContextModifierName}."
+          ioPlugin.addLocationToContext(iLocation)
+        end
+      end
     end
 
     # The main method: ensure that a dependency is accessible

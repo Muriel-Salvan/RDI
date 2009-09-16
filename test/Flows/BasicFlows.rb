@@ -54,18 +54,7 @@ module RDI
             assert_equal([], lIgnoredDeps)
             assert_equal([], lUnresolvedDeps)
             # Get the corresponding local folder
-            iInstallerName, iInstallerContent = lDesc.Installers[0]
-            lInstallLocation = nil
-            # Use a private method for regression only
-            @Installer.accessPlugin('Installers', iInstallerName) do |ioPlugin|
-              ioPlugin.PossibleDestinations.each do |iDestInfo|
-                iDestFlavour, iLocation = iDestInfo
-                if (iDestFlavour == DEST_LOCAL)
-                  lInstallLocation = iLocation
-                  break
-                end
-              end
-            end
+            lInstallLocation = @Installer.getDefaultInstallLocation(lDesc.Installers[0][0], DEST_LOCAL)
             assert(lInstallLocation != nil)
             assert_equal(true, File.exists?("#{lInstallLocation}/DummyBinary"))
             assert_equal(
@@ -102,18 +91,7 @@ module RDI
               assert_equal(true, iPlugin.isContentResolved?('DummyBinary'))
             end
             # 2. The dependency should not have been installed
-            iInstallerName, iInstallerContent = lDesc.Installers[0]
-            lInstallLocation = nil
-            # Use a private method for regression only
-            @Installer.accessPlugin('Installers', iInstallerName) do |ioPlugin|
-              ioPlugin.PossibleDestinations.each do |iDestInfo|
-                iDestFlavour, iLocation = iDestInfo
-                if (iDestFlavour == DEST_LOCAL)
-                  lInstallLocation = iLocation
-                  break
-                end
-              end
-            end
+            lInstallLocation = @Installer.getDefaultInstallLocation(lDesc.Installers[0][0], DEST_LOCAL)
             assert(lInstallLocation != nil)
             assert_equal(false, File.exists?("#{lInstallLocation}/DummyBinary"))
             assert_equal(

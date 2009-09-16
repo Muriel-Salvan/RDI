@@ -68,9 +68,16 @@ module RDI
             else
               lRBInstaller = Wx::RadioButton.new(self, Wx::ID_ANY, "#{iInstallerName} - #{iInstallerContent}")
             end
+            # Icon of the installer
+            lIconName = "#{@IconsDir}/Dependency.png"
+            # TODO: Accept more data formats
+            lInstallerIconName = "#{@Installer.RDILibDir}/Plugins/Installers/Icons/#{iInstallerName}.png"
+            if (File.exists?(lInstallerIconName))
+              lIconName = lInstallerIconName
+            end
             @InstallerComponents << [
               lRBInstaller,
-              Wx::StaticBitmap.new(self, Wx::ID_ANY, Wx::Bitmap.new),
+              Wx::StaticBitmap.new(self, Wx::ID_ANY, Wx::Bitmap.new(lIconName)),
               []
             ]
           end

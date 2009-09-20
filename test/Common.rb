@@ -15,6 +15,8 @@ RUtilAnts::Platform::initializePlatform
 require 'tmpdir'
 require 'test/unit'
 require 'rdi/rdi'
+require 'rdi/Model/View'
+require 'rdi/Model/LocationSelector'
 
 module RDI
 
@@ -141,6 +143,9 @@ module RDI
         lGemsPath = nil
         if (defined?(Gem) != nil)
           lGemsPath = Gem.path.clone
+          if (defined?(Gem.clearCache_RDI))
+            Gem.clearCache_RDI
+          end
         end
         # Create the application root directory for testing
         lAppRootDir = "#{Dir.tmpdir}/RDITest/#{self.class.to_s.gsub(/:/,'_')}"

@@ -3,10 +3,6 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
-require 'rdi/Plugins/Views/SimpleWxGUI/DependencyPanel'
-# Needed to copy files once downloaded
-require 'fileutils'
-
 module RDI
 
   module Views
@@ -54,6 +50,7 @@ module RDI
 
           # Create the list of Panels displaying each dependency
           @DependencyPanels = []
+          require 'rdi/Plugins/Views/SimpleWxGUI/DependencyPanel'
           @DepsUserChoices.each do |iDepUserChoice|
             @DependencyPanels << DependencyPanel.new(
               @NBDeps,

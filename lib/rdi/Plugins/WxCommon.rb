@@ -36,7 +36,7 @@ module RDI
       #
       # Return:
       # * <em>Wx::App</em>: The application
-      def getWxMainApp
+      def self.getWxMainApp
         rApp = nil
 
         begin
@@ -52,8 +52,8 @@ module RDI
       #
       # Parameters:
       # * _CodeBlock_: To execute in the Wx::App context
-      def ensureWxApp(&iCodeBlock)
-        if (getWxMainApp != nil)
+      def self.ensureWxApp(&iCodeBlock)
+        if (self.getWxMainApp != nil)
           # We are already running
           iCodeBlock.call
         else

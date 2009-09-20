@@ -3,15 +3,13 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
-require 'rdi/Plugins/WxCommon'
+require 'rdi/Model/View'
 
 module RDI
 
   module Views
 
     class SimpleWxGUI < RDI::Model::View
-
-      include RDI::Views::RDIWx
 
       # Ask the user about missing dependencies.
       # This method will use a user interface to know what to do with missing dependencies.
@@ -45,7 +43,8 @@ module RDI
           RUtilAnts::URLCache.initializeURLCache
         end
         # If an application is already running, use it
-        ensureWxApp do
+        require 'rdi/Plugins/WxCommon'
+        RDI::Views::RDIWx.ensureWxApp do
           showModal(DependenciesLoaderDialog, nil, ioInstaller, rDependenciesUserChoices) do |iModalResult, iDialog|
             # Nothing to do
           end

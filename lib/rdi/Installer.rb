@@ -3,9 +3,6 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
-require 'tmpdir'
-require 'fileutils'
-
 module RDI
 
   # Constants reflecting the different installation destinations
@@ -65,9 +62,11 @@ module RDI
         logBug "RDI is not yet compatible with #{RUBY_PLATFORM}. Sorry. Please open a request on http://sourceforge.net/tracker/?group_id=274498&atid=1166451"
         raise RuntimeError, "Incompatible platform: #{RUBY_PLATFORM}"
       end
+      require 'tmpdir'
       @TempRootDir = "#{Dir.tmpdir}/RDI"
       @UserDir = "#{@UserRootDir}/#{RUBY_PLATFORM}"
       @TempDir = "#{@TempRootDir}/#{RUBY_PLATFORM}"
+      require 'fileutils'
       FileUtils::mkdir_p(@TempDir)
       # Initialize the plugins manager
       if (defined?(RUtilAnts::Plugins::PluginsManager) == nil)

@@ -5,9 +5,4 @@
 
 require 'rdi/Model/DependencyDescription'
 require 'rdi/Model/DependencyUserChoice'
-require 'rdi/Model/Installer'
-require 'rdi/Model/ContextModifier'
-require 'rdi/Model/Tester'
-require 'rdi/Model/View'
-require 'rdi/Model/LocationSelector'
 require 'rdi/Installer'

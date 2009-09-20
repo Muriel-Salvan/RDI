@@ -3,6 +3,9 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
+require 'rdi/Model/ContextModifier'
+require 'rdi/Plugins/GemCommon'
+
 module RDI
 
   module ContextModifiers

@@ -3,6 +3,8 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
+require 'rdi/Model/Installer'
+
 module RDI
 
   module Installers

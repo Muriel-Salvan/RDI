@@ -48,6 +48,8 @@ module RDI
         @@MainInstallerInstance = self
       end
       @DefaultOptions = {}
+
+      # Set directories
       @RDILibDir = File.dirname(__FILE__)
       @ExtDir = "#{iAppRootDir}/ext/#{RUBY_PLATFORM}"
       # Initialize all other standard directories
@@ -68,7 +70,8 @@ module RDI
       @TempDir = "#{@TempRootDir}/#{RUBY_PLATFORM}"
       require 'fileutils'
       FileUtils::mkdir_p(@TempDir)
-      # Initialize the plugins manager
+
+      # Get all possible plugins
       if (defined?(RUtilAnts::Plugins::PluginsManager) == nil)
         require 'rUtilAnts/Plugins'
       end
@@ -89,6 +92,7 @@ module RDI
         ioPlugin.AffectingContextModifiers = ioPlugin.getAffectingContextModifiers
       end
       @Plugins.parsePluginsFromDir('Views', "#{@RDILibDir}/Plugins/Views", 'RDI::Views')
+      @Plugins.parsePluginsFromDir('ProgressViews', "#{@RDILibDir}/Plugins/ProgressViews", 'RDI::ProgressViews')
       @Plugins.getPluginNames('Views').each do |iViewName|
         @Plugins.parsePluginsFromDir("LocationSelectors_#{iViewName}", "#{@RDILibDir}/Plugins/Views/#{iViewName}/LocationSelectors", "RDI::Views::LocationSelectors::#{iViewName}")
       end
@@ -153,6 +157,7 @@ module RDI
     # ** *:AutoInstallLocation* (_Object_): Used to provide the location to install to, when :AutoInstall is set to DEST_OTHER only.
     # ** *:PossibleContextModifiers* (<em>map<String,list<list<[String,Object]>>></em>): The list of possible context modifiers sets to try, per dependency ID [optional = nil]
     # ** *:PreferredViews* (<em>list<String></em>): The list of preferred views [optional = nil]
+    # ** *:PreferredProgressViews* (<em>list<String></em>): The list of preferred progress views [optional = nil]
     # Return:
     # * _Exception_: The error, or nil in case of success
     # * <em>map<String,list<[String,Object]>></em>: The list of context modifiers that have been applied to resolve the dependencies, per dependency ID (can be inconsistent in case of error)
@@ -180,6 +185,10 @@ module RDI
       if (iParameters.has_key?(:PreferredViews))
         lPreferredViews = iParameters[:PreferredViews]
       end
+      lPreferredProgressViews = @DefaultOptions[:PreferredProgressViews]
+      if (iParameters.has_key?(:PreferredProgressViews))
+        lPreferredProgressViews = iParameters[:PreferredProgressViews]
+      end
       # First, test if the dependencies are already accessible
       lDepsToResolve = []
       iDepDescList.each do |iDepDesc|
@@ -201,101 +210,136 @@ module RDI
           if (lAutoInstall == nil)
             # Ask the user what to do with those missing dependencies
             rDepsUserChoices = askUserForMissingDeps(lMissingDependencies, lPreferredViews)
-            # Parse what was returned by the user choices
-            rDepsUserChoices.each do |iDepUserChoice|
-              lDepDesc = iDepUserChoice.DepDesc
-              lIgnore = false
-              if (iDepUserChoice.Locate)
-                if (lDepDesc.Testers.size == iDepUserChoice.ResolvedTesters.size)
-                  # This one was resolved using ContextModifiers.
-                  # Apply them.
-                  iDepUserChoice.ResolvedTesters.each do |iTesterName, iCMInfo|
-                    iCMName, iCMContent = iCMInfo
-                    accessPlugin('ContextModifiers', iCMName) do |ioPlugin|
-                      ioPlugin.addLocationToContext(iCMContent)
+            # Create a progression view
+            setupPreferredProgress(lPreferredProgressViews) do |ioProgressView|
+              # Be careful, as ioProgressView can be nil if no view was found
+              if (ioProgressView != nil)
+                ioProgressView.setRange(rDepsUserChoices.size)
+              end
+              # Parse what was returned by the user choices
+              rDepsUserChoices.each do |iDepUserChoice|
+                lDepDesc = iDepUserChoice.DepDesc
+                lIgnore = false
+                if (iDepUserChoice.Locate)
+                  if (ioProgressView != nil)
+                    ioProgressView.setTitle("Locate #{lDepDesc.ID}")
+                  end
+                  if (lDepDesc.Testers.size == iDepUserChoice.ResolvedTesters.size)
+                    # This one was resolved using ContextModifiers.
+                    # Apply them.
+                    iDepUserChoice.ResolvedTesters.each do |iTesterName, iCMInfo|
+                      iCMName, iCMContent = iCMInfo
+                      accessPlugin('ContextModifiers', iCMName) do |ioPlugin|
+                        ioPlugin.addLocationToContext(iCMContent)
+                      end
+                    end
+                    # Remember what we applied
+                    rAppliedContextModifiers[lDepDesc.ID] = iDepUserChoice.ResolvedTesters.values
+                  else
+                    rUnresolvedDeps << lDepDesc
+                    lIgnore = true
+                  end
+                elsif (iDepUserChoice.IdxInstaller != nil)
+                  if (ioProgressView != nil)
+                    ioProgressView.setTitle("Install #{lDepDesc.ID}")
+                  end
+                  # This one is to be installed
+                  # Get the installer plugin
+                  lInstallerName, lInstallerContent, lContextModifiers = lDepDesc.Installers[iDepUserChoice.IdxInstaller]
+                  accessPlugin('Installers', lInstallerName) do |ioInstallerPlugin|
+                    lLocation = nil
+                    if (ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][0] == DEST_OTHER)
+                      lLocation = iDepUserChoice.OtherLocation
+                    else
+                      lLocation = ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][1]
+                    end
+                    lInstallEnv = {}
+                    rError = installDependency(lDepDesc, iDepUserChoice.IdxInstaller, lLocation, lInstallEnv)
+                    # Get what has been modified in the context
+                    rAppliedContextModifiers[lDepDesc.ID] = lInstallEnv[:ContextModifiers]
+                    # If an error occurred, cancel
+                    if (rError != nil)
+                      break
                     end
                   end
-                  # Remember what we applied
-                  rAppliedContextModifiers[lDepDesc.ID] = iDepUserChoice.ResolvedTesters.values
                 else
-                  rUnresolvedDeps << lDepDesc
+                  if (ioProgressView != nil)
+                    ioProgressView.setTitle("Ignore #{lDepDesc.ID}")
+                  end
+                  rIgnoredDeps << lDepDesc
                   lIgnore = true
                 end
-              elsif (iDepUserChoice.IdxInstaller != nil)
-                # This one is to be installed
-                # Get the installer plugin
-                lInstallerName, lInstallerContent, lContextModifiers = lDepDesc.Installers[iDepUserChoice.IdxInstaller]
-                accessPlugin('Installers', lInstallerName) do |ioInstallerPlugin|
-                  lLocation = nil
-                  if (ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][0] == DEST_OTHER)
-                    lLocation = iDepUserChoice.OtherLocation
-                  else
-                    lLocation = ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][1]
-                  end
-                  lInstallEnv = {}
-                  rError = installDependency(lDepDesc, iDepUserChoice.IdxInstaller, lLocation, lInstallEnv)
-                  # Get what has been modified in the context
-                  rAppliedContextModifiers[lDepDesc.ID] = lInstallEnv[:ContextModifiers]
-                  # If an error occurred, cancel
-                  if (rError != nil)
-                    break
-                  end
+                if (ioProgressView != nil)
+                  ioProgressView.incValue
                 end
-              else
-                rIgnoredDeps << lDepDesc
-                lIgnore = true
-              end
-              if (!lIgnore)
-                # Test if it was installed correctly
-                if (!testDependency(lDepDesc))
-                  # Still missing
-                  rUnresolvedDeps << lDepDesc
+                if (!lIgnore)
+                  if (ioProgressView != nil)
+                    ioProgressView.setTitle("Test #{lDepDesc.ID}")
+                  end
+                  # Test if it was installed correctly
+                  if (!testDependency(lDepDesc))
+                    # Still missing
+                    rUnresolvedDeps << lDepDesc
+                  end
                 end
               end
             end
           else
-            lMissingDependencies.each do |iDepDesc|
-              # Try to find an installer and a location for the lAutoInstall value
-              lIdxInstaller = 0
-              lLocation = nil
-              iDepDesc.Installers.each do |iInstallerInfo|
-                iInstallerName, iInstallerContent, iContextModifiersList = iInstallerInfo
-                accessPlugin('Installers', iInstallerName) do |iPlugin|
-                  iPlugin.PossibleDestinations.each do |iDestinationInfo|
-                    iLocationFlavour, iLocation = iDestinationInfo
-                    if (iLocationFlavour == lAutoInstall)
-                      # We found it
-                      if (iLocationFlavour == DEST_OTHER)
-                        lLocation = lAutoInstallLocation
-                      else
-                        lLocation = iLocation
+            # Create a progression view
+            setupPreferredProgress(lPreferredProgressViews) do |ioProgressView|
+              # Be careful, as ioProgressView can be nil if no view was found
+              if (ioProgressView != nil)
+                ioProgressView.setRange(lMissingDependencies.size)
+              end
+              lMissingDependencies.each do |iDepDesc|
+                if (ioProgressView != nil)
+                  ioProgressView.setTitle("Installing #{iDepDesc.ID}")
+                end
+                # Try to find an installer and a location for the lAutoInstall value
+                lIdxInstaller = 0
+                lLocation = nil
+                iDepDesc.Installers.each do |iInstallerInfo|
+                  iInstallerName, iInstallerContent, iContextModifiersList = iInstallerInfo
+                  accessPlugin('Installers', iInstallerName) do |iPlugin|
+                    iPlugin.PossibleDestinations.each do |iDestinationInfo|
+                      iLocationFlavour, iLocation = iDestinationInfo
+                      if (iLocationFlavour == lAutoInstall)
+                        # We found it
+                        if (iLocationFlavour == DEST_OTHER)
+                          lLocation = lAutoInstallLocation
+                        else
+                          lLocation = iLocation
+                        end
+                        break
                       end
-                      break
                     end
                   end
+                  if (lLocation != nil)
+                    break
+                  end
+                  lIdxInstaller += 1
                 end
-                if (lLocation != nil)
+                if (lLocation == nil)
+                  # We were unable to find a correct default location for lAutoInstall
+                  rError = RuntimeError.new("Unable to find a default location for #{lAutoInstall}.")
+                else
+                  lInstallEnv = {}
+                  rError = installDependency(iDepDesc, lIdxInstaller, lLocation, lInstallEnv)
+                  # Get what has been modified in the context
+                  rAppliedContextModifiers[iDepDesc.ID] = lInstallEnv[:ContextModifiers]
+                  # Test if it was installed correctly
+                  if (!testDependency(iDepDesc))
+                    # Still missing
+                    rUnresolvedDeps << iDepDesc
+                  end
+                end
+                if (rError != nil)
+                  # An error occurred: cancel
                   break
                 end
-                lIdxInstaller += 1
-              end
-              if (lLocation == nil)
-                # We were unable to find a correct default location for lAutoInstall
-                rError = RuntimeError.new("Unable to find a default location for #{lAutoInstall}.")
-              else
-                lInstallEnv = {}
-                rError = installDependency(iDepDesc, lIdxInstaller, lLocation, lInstallEnv)
-                # Get what has been modified in the context
-                rAppliedContextModifiers[iDepDesc.ID] = lInstallEnv[:ContextModifiers]
-                # Test if it was installed correctly
-                if (!testDependency(iDepDesc))
-                  # Still missing
-                  rUnresolvedDeps << iDepDesc
+                if (ioProgressView != nil)
+                  ioProgressView.incValue
                 end
-              end
-              if (rError != nil)
-                # An error occurred: cancel
-                break
               end
             end
           end
@@ -569,6 +613,64 @@ module RDI
       end
 
       return rDependenciesUserChoices
+    end
+
+    # Setup a progression view based on user preferences.
+    # It is possible to specify a list of preferred progress views. If it is the case, RDI will try first views among this list that already have their dependencies accessible, then RDI will try to install the dependencies of the first one. It will use the first view it can.
+    # If not specified, RDI will use arbitrary the first progress view it can, and eventualy try to install one.
+    #
+    # Parameters:
+    # * *iPreferredProgressViewsList* (<em>list<String></em>): The list of preferred views (can be nil)
+    # * _CodeBlock_: Code to execute once the progress view has been found
+    # ** *ioProgressView* (_Object_): The corresponding progress view
+    def setupPreferredProgress(iPreferredProgressViewsList)
+      lViewsList = iPreferredProgressViewsList
+      if ((iPreferredProgressViewsList == nil) or
+          (iPreferredProgressViewsList.empty?))
+        # Set all views as being preferred
+        lViewsList = @Plugins.getPluginNames('ProgressViews')
+      end
+      if (lViewsList.empty?)
+        logDebug 'No progress view was accessible among plugins. Please check your Plugin/ProgressViews directory. Continuing without progress view.'
+      else
+        # Now we try to select 1 progress view that is accessible without any dependency installation
+        lPlugin = nil
+        lViewsList.each do |iViewName|
+          lPlugin, lError = @Plugins.getPluginInstance('ProgressViews', iViewName,
+            :OnlyIfExtDepsResolved => true,
+            :RDIInstaller => self
+          )
+          if (lPlugin != nil)
+            # Found one
+            logDebug "Executing Progress View #{iViewName}"
+            break
+          end
+        end
+        if (lPlugin == nil)
+          # Now we try to install them
+          lViewsList.each do |iViewName|
+            lPlugin, lError = @Plugins.getPluginInstance('ProgressViews', iViewName,
+              :RDIInstaller => self
+            )
+            if (lPlugin != nil)
+              # Found one
+              logDebug "Executing Progress View #{iViewName}"
+              break
+            end
+          end
+        end
+        if (lPlugin == nil)
+          logDebug 'After trying all preferred progress views, we are still unable to have one. Performing without progression.'
+        end
+      end
+      # Call it
+      if (lPlugin == nil)
+        yield(nil)
+      else
+        lPlugin.setupProgress do |ioProgressView|
+          yield(ioProgressView)
+        end
+      end
     end
 
   end

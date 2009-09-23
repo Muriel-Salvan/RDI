@@ -16,11 +16,26 @@ require 'tmpdir'
 require 'test/unit'
 require 'rdi/rdi'
 require 'rdi/Model/View'
+require 'rdi/Model/ProgressView'
 require 'rdi/Model/LocationSelector'
 
 module RDI
 
   module Test
+
+    # Mute progress view
+    class MuteProgressView < RDI::Model::ProgressView
+
+      # Setup the progress and call the client code to execute inside
+      #
+      # Parameters:
+      # * _CodeBlock_: The code to execute during this progression:
+      # ** *ioProgressView* (_Object_): The progress view that will receive notifications of progression (can be nil if no progression view available)
+      def setupProgress
+        yield(nil)
+      end
+
+    end
 
     class RDITestCase < ::Test::Unit::TestCase
 
@@ -156,6 +171,20 @@ module RDI
         FileUtils::mkdir_p(lAppRootDir)
         # Create the installer
         @Installer = RDI::Installer.new(lAppRootDir)
+        # Register the mute progress view
+                @Installer.registerNewPlugin(
+          'ProgressViews',
+          'MuteProgressView',
+          nil,
+          nil,
+          RDI::Test::MuteProgressView,
+          nil
+        )
+        # And set it as the default progress view
+        @Installer.setDefaultOptions( {
+          :PreferredProgressViews => [ 'MuteProgressView' ]
+        } )
+
         # Call the test code
         yield
         @Installer = nil

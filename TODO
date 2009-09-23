@@ -8,9 +8,9 @@
 ** Regression should warn when plugins don't have regression test cases
 ** Add cases were part of Testers are resolved (do GUIs correctly take the resolved ones into account ?)
 ** Add generic cases testing that for each AffectingContextModifier in Testers plugins, they effectively resolve Testers.
+** Add generic cases for ProgressViews.
 
 * Development
 ** In the dependenciesloader dialog, test internet connection before proposing installing Gems and Dlls.
-** Implement a progression dialog upon installation
-** Give the possiblity to provide simple APIs that will handle most common dependency descriptions
+** Give the possiblity to provide simple APIs that will handle most common dependency descriptions.
 ** Add buttons/combos 'Ignore All' 'Install All local' 'Install All system'... in the SimpleWxGUI.

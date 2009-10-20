@@ -1,5 +1,46 @@
 = RDI Release History
 
+== 0.1.0.20091020 (Alpha)
+
+=== New features
+
+* Updated icon for ignoring dependencies
+* Implemented ProgressViews to give progression dialogs upon installation.
+* Implemented Text Progress View.
+* Implemented SimpleWxGUI Progress View.
+* Added possibility to specify preferred ProgressViews.
+* Refactored requires for gain in startup performances.
+* Implemented a cache of Gem.path, find_files and clear_cache.
+* Setting default options does not unset previously set default options, unless explicitly specified.
+* Added getDefaultInstallLocation to the API.
+* Added ensureLocationInContext to the API.
+* Add install icons next to the installer choices in SimpleWxGUI.
+* Local downloads are made in a Downloads sub-directory.
+* Better error handling of zip extraction.
+* Changed the local path to install gems (added LocalGems subdirectory to it)
+* Removed .rb suffixes in required files (better migration to .so if needed)
+* Adapted to new getPluginInstance interface
+* Added default options that can be changed.
+* Adopted new rUtilAnts API
+* Removed direct public access to the application root directory (always use ExtDir instead).
+* Implemented a main instance singleton.
+* Renamed $CT_* variables into $rUtilAnts_*
+
+=== Testing
+
+* Regression: Implemented MuteProgressView to silently progress on test installations.
+* Regression: Used new API.
+* Use TempDir instead of AppRootDir in regression.
+
+=== Bug correction
+
+* Bug correction: Zip extraction did not set %INSTALLDIR% correctly for ContextModifiers.
+* Bug correction: Installing Gem dependencies in paths already part of Gem.path could not be used correctly.
+* Bug correction: Setting installer in the DependencyUserChoice object also set the Ignore flag.
+* Bug correction: When choosing an alternate location to install to, the components did not display it correctly.
+* Bug correction: rUtilAnts/Plugins was wrongly required.
+* Bug correction: Corrected some regression test cases that did not clean everything behind them.
+
 == 0.0.1.20090910 (Alpha)
 
 * Initial public release

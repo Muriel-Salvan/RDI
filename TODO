@@ -14,3 +14,4 @@
 ** In the dependenciesloader dialog, test internet connection before proposing installing Gems and Dlls.
 ** Give the possiblity to provide simple APIs that will handle most common dependency descriptions.
 ** Add buttons/combos 'Ignore All' 'Install All local' 'Install All system'... in the SimpleWxGUI.
+** In the dependency description, each installer could have a list of DependencyDescription to ensure before trying to install. This could be useful for installers that compile... This can be used for nokogiri under Linux that needs yum install libxml2-devel and libxslt-devel.

@@ -1,5 +1,9 @@
 = RDI Release History
 
+== 0.1.1.20091105 (Alpha)
+
+* Adapted to last version of RubyPackager.
+
 == 0.1.0.20091020 (Alpha)
 
 === New features

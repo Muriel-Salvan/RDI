@@ -5,11 +5,11 @@
 
 # This file is intended to be required by every test case.
 
-require 'RUtilAnts/Logging'
+require 'rUtilAnts/Logging'
 RUtilAnts::Logging::initializeLogging("#{File.dirname(__FILE__)}/../lib", 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', true)
-require 'RUtilAnts/URLAccess'
+require 'rUtilAnts/URLAccess'
 RUtilAnts::URLAccess::initializeURLAccess
-require 'RUtilAnts/Platform'
+require 'rUtilAnts/Platform'
 RUtilAnts::Platform::initializePlatform
 
 require 'tmpdir'
@@ -334,8 +334,14 @@ module RDI
                 lLocation = getOtherLocation
               end
               assert_equal(false, verifyInstalledContent(lLocation))
-              # Install the test content
-              ioPlugin.installDependency(lContent, lLocation)
+              # Protect from exceptions, to ensure that test content will be uninstalled
+              begin
+                # Install the test content
+                ioPlugin.installDependency(lContent, lLocation)
+              rescue Exception
+                # Log the exception for it to be seen
+                assert_equal(nil, $!)
+              end
               # Verify
               assert_equal(true, verifyInstalledContent(lLocation))
               # Remove

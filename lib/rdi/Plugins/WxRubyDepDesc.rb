@@ -11,7 +11,7 @@ module RDI
   # Return:
   # * <em>map<Symbol,Object></em>: The description
   def self.getWxRubyDepDesc
-    return RDI::Model::DependencyDescription.new('WxRuby 2.0.0').addDescription( {
+    return RDI::Model::DependencyDescription.new('WxRuby').addDescription( {
       :Testers => [
         {
           :Type => 'RubyRequires',

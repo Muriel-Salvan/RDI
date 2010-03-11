@@ -27,7 +27,7 @@ module RDI
               :AutoInstallLocation => lWxRubyInstallLocation,
               :PreferredViews => [ 'Text' ]
             } )
-          # TODO: Re-enable it when WxRuby will be more stable
+          # TODO (wxRuby): Re-enable it when WxRuby will be more stable
           GC.disable
           require 'wx'
           setGUIForDialogs(RUtilAnts::Logging::Logger::GUI_WX)
@@ -44,7 +44,7 @@ module RDI
           end
         else
           # It is already loaded.
-          # Add the direcotry to the Gem path.
+          # Add the directory to the Gem path.
           RDI::Installer.new(lWxRubyInstallLocation).accessPlugin('ContextModifiers', 'GemPath') do |ioPlugin|
             ioPlugin.addLocationToContext(lWxRubyInstallLocation)
           end

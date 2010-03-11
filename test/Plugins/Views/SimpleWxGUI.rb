@@ -28,7 +28,6 @@ module RDI
         # * *iScenario* (<em>list<[Integer,String,Object]></em>): The scenario
         # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
         def initScenario(ioPlugin, iScenario, iMissingDependencies)
-          # Display it to the user for him to perform the actions
           @Scenario = iScenario
         end
 

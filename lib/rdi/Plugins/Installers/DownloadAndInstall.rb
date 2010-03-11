@@ -4,6 +4,8 @@
 #++
 
 require 'rdi/Model/Installer'
+require 'rUtilAnts/Misc'
+RUtilAnts::Misc::initializeMisc
 
 module RDI
 
@@ -32,16 +34,15 @@ module RDI
         rError = super(iURL, lTmpDir)
         if (rError == nil)
           # And then we execute the command to install it
-          lOldDir = Dir.getwd
-          Dir.chdir(lTmpDir)
-          if (iCmdProc.call(iLocation))
-            # Remove temporary directory
-            FileUtils::rm_rf(lTmpDir)
-            ioInstallEnv[:InstallDir] = iLocation
-          else
-            rError = RuntimeError.new('Installation code failed')
+          changeDir(lTmpDir) do
+            if (iCmdProc.call(iLocation))
+              # Remove temporary directory
+              FileUtils::rm_rf(lTmpDir)
+              ioInstallEnv[:InstallDir] = iLocation
+            else
+              rError = RuntimeError.new('Installation code failed')
+            end
           end
-          Dir.chdir(lOldDir)
         end
 
         return rError

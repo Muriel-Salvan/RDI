@@ -35,11 +35,11 @@ module RDI
         # Display the dialog
         require 'rdi/Plugins/Views/SimpleWxGUI/DependenciesLoaderDialog'
         if (defined?(showModal) == nil)
-          require 'RUtilAnts/GUI'
+          require 'rUtilAnts/GUI'
           RUtilAnts::GUI.initializeGUI
         end
         if (defined?($rUtilAnts_URLCache) == nil)
-          require 'RUtilAnts/URLCache'
+          require 'rUtilAnts/URLCache'
           RUtilAnts::URLCache.initializeURLCache
         end
         # If an application is already running, use it

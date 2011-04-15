@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -11,6 +11,7 @@ module RDI
   # Return:
   # * <em>map<Symbol,Object></em>: The description
   def self.getRubyGemsDepDesc
+    require 'rbconfig'
     return RDI::Model::DependencyDescription.new('RubyGems 1.3.5').addDescription( {
       :Testers => [
         {

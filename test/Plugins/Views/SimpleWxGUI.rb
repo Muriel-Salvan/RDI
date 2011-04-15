@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -11,7 +11,8 @@ module RDI
 
       class SimpleWxGUI < RDITestCase
 
-        include RDITestCase_Views
+        # TODO: Uncomment this when WxRuby will be usable: this will add tests back
+        #include RDITestCase_Views
 
         # Constructor
         def setup
@@ -68,7 +69,7 @@ module RDI
             # This thread will pilot our GUI
             begin
               lExit = false
-              while !lExit
+              while (!lExit)
                 # Get the Top window (don't use Wx::get_app.get_top_window as it is not updated after several dialogs displayed)
                 # TODO (wxRuby): Make Wx::get_app.get_top_window work as expected
                 lTopWindow = $RDI_DepLoaderDialog
@@ -177,7 +178,9 @@ module RDI
             end
           end
 
-          return ioPlugin.execute(ioInstaller, iMissingDependencies)
+          return RDI::Test::RDIWx.executeInWxEnv do
+            next ioPlugin.execute(ioInstaller, iMissingDependencies)
+          end
         end
 
       end

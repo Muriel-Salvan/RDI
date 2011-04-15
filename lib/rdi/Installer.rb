@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -54,10 +54,10 @@ module RDI
       @ExtDir = "#{iAppRootDir}/ext/#{RUBY_PLATFORM}"
       # Initialize all other standard directories
       case RUBY_PLATFORM
-      when 'i386-mswin32'
+      when 'i386-mswin32', 'i386-mingw32'
         @UserRootDir = "#{ENV['USERPROFILE']}/RDI"
         @SystemDir = "#{ENV['SystemRoot']}/RDI"
-      when 'i386-linux'
+      when 'i386-linux', 'i386-cygwin', 'x86_64-linux'
         @UserRootDir = "#{File.expand_path('~')}/RDI"
         @SystemDir = "/usr/local/RDI"
       else
@@ -361,8 +361,8 @@ module RDI
       # Loop among Testers
       iDepDesc.Testers.each do |iTesterInfo|
         iTesterName, iTesterContent = iTesterInfo
+        logDebug "Test dependency #{iTesterContent} using #{iTesterName} ..."
         accessPlugin('Testers', iTesterName) do |iPlugin|
-          logDebug "Test dependency #{iTesterContent} using #{iTesterName} ..."
           rSuccess = iPlugin.isContentResolved?(iTesterContent)
           if (rSuccess)
             logDebug "Dependency #{iTesterContent} found."

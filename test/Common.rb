@@ -1,12 +1,14 @@
 #--
-# Copyright (c) 2009 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
 # This file is intended to be required by every test case.
 
 require 'rUtilAnts/Logging'
-RUtilAnts::Logging::initializeLogging("#{File.dirname(__FILE__)}/../lib", 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', true)
+#RUtilAnts::Logging::initializeLogging("#{File.dirname(__FILE__)}/../lib", 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', true)
+RUtilAnts::Logging::initializeLogging("#{File.dirname(__FILE__)}/../lib", 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', false)
+activateLogDebug(true)
 require 'rUtilAnts/URLAccess'
 RUtilAnts::URLAccess::initializeURLAccess
 require 'rUtilAnts/Platform'
@@ -172,7 +174,7 @@ module RDI
         # Create the installer
         @Installer = RDI::Installer.new(lAppRootDir)
         # Register the mute progress view
-                @Installer.registerNewPlugin(
+        @Installer.registerNewPlugin(
           'ProgressViews',
           'MuteProgressView',
           nil,

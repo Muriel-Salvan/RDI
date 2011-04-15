@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -49,6 +49,27 @@ module RDI
             ioPlugin.addLocationToContext(lWxRubyInstallLocation)
           end
         end
+      end
+
+      # Execute some code in the same thread that executes the main Wx loop.
+      # This should be used to execute any code dealing with the GUI.
+      #
+      # Parameters:
+      # * *&iClientCode* (_CodeBlock_): Client code to be called by the main loop thread:
+      # ** _Object_: Return value that will be transferred as the return value of this function
+      # Return:
+      # * _Object_: The return value of the client code
+      def self.executeInWxEnv(&iClientCode)
+        rResult = nil
+
+        $RDI_Test_WxApp.Code = iClientCode
+        while ($RDI_Test_WxApp.Code != nil)
+          # We wait
+          sleep(500)
+        end
+        rResult = $RDI_Test_WxApp.CodeResult
+
+        return rResult
       end
 
     end

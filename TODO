@@ -9,6 +9,7 @@
 ** Add cases were part of Testers are resolved (do GUIs correctly take the resolved ones into account ?)
 ** Add generic cases testing that for each AffectingContextModifier in Testers plugins, they effectively resolve Testers.
 ** Add generic cases for ProgressViews.
+** Uncomment back test cases for SimpleWxGUI.
 
 * Development
 ** In the dependenciesloader dialog, test internet connection before proposing installing Gems and Dlls.

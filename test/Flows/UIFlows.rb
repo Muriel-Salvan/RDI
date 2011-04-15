@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -287,7 +287,7 @@ module RDI
               end
               # Check that the dependency is resolved
               @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-                assert_equal(true, iPlugin.isContentResolved?('DummyBinary'))
+                assert_equal(true, iPlugin.isContentResolved?(['DummyBinary']))
               end
             end
           end
@@ -320,7 +320,7 @@ module RDI
               end
               # Check that the dependency is not resolved
               @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-                assert_equal(false, iPlugin.isContentResolved?('DummyBinary'))
+                assert_equal(false, iPlugin.isContentResolved?(['DummyBinary']))
               end
             end
           end
@@ -361,7 +361,7 @@ module RDI
               end
               # Check that the dependency is resolved
               @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-                assert_equal(true, iPlugin.isContentResolved?('DummyBinary'))
+                assert_equal(true, iPlugin.isContentResolved?(['DummyBinary']))
               end
             end
           end
@@ -404,7 +404,7 @@ module RDI
               end
               # Check that the dependency is resolved
               @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-                assert_equal(false, iPlugin.isContentResolved?('DummyBinary'))
+                assert_equal(false, iPlugin.isContentResolved?(['DummyBinary']))
               end
             end
           end
@@ -444,7 +444,7 @@ module RDI
               end
               # Check that the dependency is resolved
               @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-                assert_equal(true, iPlugin.isContentResolved?('DummyBinary'))
+                assert_equal(true, iPlugin.isContentResolved?(['DummyBinary']))
               end
             end
           end

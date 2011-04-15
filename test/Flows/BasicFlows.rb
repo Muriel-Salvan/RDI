@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -88,7 +88,7 @@ module RDI
             # If RDI has correctly found it, there are 2 things that can prove it:
             # 1. The system path should have "#{@RepositoryDir}/Binaries"
             @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-              assert_equal(true, iPlugin.isContentResolved?('DummyBinary'))
+              assert_equal(true, iPlugin.isContentResolved?(['DummyBinary']))
             end
             # 2. The dependency should not have been installed
             lInstallLocation = @Installer.getDefaultInstallLocation(lDesc.Installers[0][0], DEST_LOCAL)

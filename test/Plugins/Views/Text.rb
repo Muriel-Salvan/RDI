@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -21,9 +21,9 @@ module RDI
 
         # Initialize the context to inject the following scenario to the View plugin
         #
-        # Parameters:
+        # Parameters::
         # * *ioPlugin* (_Object_): The View plugin
-        # * *iScenario* (<em>list<[Integer,String,Object]></em>): The scenario
+        # * *iScenario* (<em>list< [Integer,String,Object] ></em>): The scenario
         # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
         def initScenario(ioPlugin, iScenario, iMissingDependencies)
           # Index the dependencies ID
@@ -59,11 +59,11 @@ module RDI
               lStr = "#{iMissingDependencies.size+1}."
             when ACTION_SELECT_AFFECTING_CONTEXTMODIFIER
               # Find the position of ContextModifier named iParameters[0] in the UI display
-              lStr += "1.#{RDI::Model::DependencyUserChoice::getAffectingContextModifiers(@Installer, iMissingDependencies[lDepsIndex[iDepID]]).index(iParameters[0])+1}."
+              lStr += "1.#{RDI::Model::DependencyUserChoice::get_affecting_context_modifiers(@Installer, iMissingDependencies[lDepsIndex[iDepID]]).index(iParameters[0])+1}."
               lCmdList << lStr
               lStr = iParameters[1]
             else
-              logBug "Unknown Action: #{iAction}"
+              log_bug "Unknown Action: #{iAction}"
             end
             lCmdList << lStr
           end
@@ -81,7 +81,7 @@ module RDI
         # Finalize scenarion.
         # If context was modified by initScenario, revert it here.
         #
-        # Parameters:
+        # Parameters::
         # * *ioPlugin* (_Object_): The View plugin
         def finalScenario(ioPlugin)
           # We direct back $stdin and $stdout
@@ -93,11 +93,11 @@ module RDI
 
         # Call the execute method of the plugin.
         #
-        # Parameters:
+        # Parameters::
         # * *ioPlugin* (_Object_): The View plugin
         # * *ioInstaller* (_Installer_): The RDI installer
         # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
-        # Return:
+        # Return::
         # * <em>list<DependencyUserChoice></em>: The corresponding user choices
         def executeScenario(ioPlugin, ioInstaller, iMissingDependencies)
           return ioPlugin.execute(ioInstaller, iMissingDependencies)

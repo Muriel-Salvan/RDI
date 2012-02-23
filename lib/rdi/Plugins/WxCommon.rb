@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -17,7 +17,7 @@ module RDI
 
         # Constructor
         #
-        # Parameters:
+        # Parameters::
         # * *iCodeBlock* (_Proc_): The code to call
         def initialize(iCodeBlock)
           super()
@@ -34,7 +34,7 @@ module RDI
 
       # Get the main Ex application, or nil if none
       #
-      # Return:
+      # Return::
       # * <em>Wx::App</em>: The application
       def self.getWxMainApp
         rApp = nil
@@ -50,7 +50,7 @@ module RDI
 
       # Ensure that some given code is run in a Wx::App context
       #
-      # Parameters:
+      # Parameters::
       # * _CodeBlock_: To execute in the Wx::App context
       def self.ensureWxApp(&iCodeBlock)
         if (self.getWxMainApp != nil)

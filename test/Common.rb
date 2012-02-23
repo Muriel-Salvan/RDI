@@ -1,18 +1,17 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
 # This file is intended to be required by every test case.
 
 require 'rUtilAnts/Logging'
-#RUtilAnts::Logging::initializeLogging("#{File.dirname(__FILE__)}/../lib", 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', true)
-RUtilAnts::Logging::initializeLogging("#{File.dirname(__FILE__)}/../lib", 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', false)
-activateLogDebug(true)
+#RUtilAnts::Logging::install_logger_on_object(:lib_root_dir => "#{File.dirname(__FILE__)}/../lib", :bug_tracker_url => 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', :mute_stdout => true)
+RUtilAnts::Logging::install_logger_on_object(:lib_root_dir => "#{File.dirname(__FILE__)}/../lib", :bug_tracker_url => 'http://sourceforge.net/tracker/?group_id=274498&atid=1166448', :mute_stdout => false, :debug_mode => true)
 require 'rUtilAnts/URLAccess'
-RUtilAnts::URLAccess::initializeURLAccess
+RUtilAnts::URLAccess::install_url_access_on_object
 require 'rUtilAnts/Platform'
-RUtilAnts::Platform::initializePlatform
+RUtilAnts::Platform::install_platform_on_object
 
 require 'tmpdir'
 require 'test/unit'
@@ -30,10 +29,10 @@ module RDI
 
       # Setup the progress and call the client code to execute inside
       #
-      # Parameters:
+      # Parameters::
       # * _CodeBlock_: The code to execute during this progression:
-      # ** *ioProgressView* (_Object_): The progress view that will receive notifications of progression (can be nil if no progression view available)
-      def setupProgress
+      #   * *ioProgressView* (_Object_): The progress view that will receive notifications of progression (can be nil if no progression view available)
+      def setup_progress
         yield(nil)
       end
 
@@ -43,10 +42,10 @@ module RDI
 
       # Get a simple description to use in these test cases
       #
-      # Return:
+      # Return::
       # * <em>RDI::Model::DependencyDescription</em>: The description
       def getSimpleDesc
-        return RDI::Model::DependencyDescription.new('DummyBinary').addDescription( {
+        return RDI::Model::DependencyDescription.new('DummyBinary').add_description( {
           :Testers => [
             {
               :Type => 'Binaries',
@@ -70,10 +69,10 @@ module RDI
 
       # Get another simple description to use in these test cases
       #
-      # Return:
+      # Return::
       # * <em>RDI::Model::DependencyDescription</em>: The description
       def getSimpleDesc2
-        return RDI::Model::DependencyDescription.new('DummyLibrary').addDescription( {
+        return RDI::Model::DependencyDescription.new('DummyLibrary').add_description( {
           :Testers => [
             {
               :Type => 'DynamicLibraries',
@@ -97,10 +96,10 @@ module RDI
 
       # Get a simple description using 2 Installers
       #
-      # Return:
+      # Return::
       # * <em>RDI::Model::DependencyDescription</em>: The description
       def get2InstallersDesc
-        return RDI::Model::DependencyDescription.new('DummyBinary2').addDescription( {
+        return RDI::Model::DependencyDescription.new('DummyBinary2').add_description( {
           :Testers => [
             {
               :Type => 'Binaries',
@@ -138,9 +137,9 @@ module RDI
         @Installer = nil
         # Silent user interaction of logging
         @MessagesStack = []
-        setLogMessagesStack(@MessagesStack)
+        set_log_messages_stack(@MessagesStack)
         @ErrorsStack = []
-        setLogErrorsStack(@ErrorsStack)
+        set_log_errors_stack(@ErrorsStack)
       end
 
       # Define a dummy test case to avoid errors during run of this class
@@ -150,12 +149,12 @@ module RDI
 
       # Setup an applicative directory and an installer
       #
-      # Parameters:
+      # Parameters::
       # * *CodeBlock*: The code called once the application is ready
       def setupAppDir
         # Get an image of the context, as we will put it back after the testing
-        lSystemPath = $rUtilAnts_Platform_Info.getSystemExePath.clone
-        lLibsPath = $rUtilAnts_Platform_Info.getSystemLibsPath.clone
+        lSystemPath = getSystemExePath.clone
+        lLibsPath = getSystemLibsPath.clone
         lLoadPath = $LOAD_PATH.clone
         lGemsPath = nil
         if (defined?(Gem) != nil)
@@ -174,7 +173,7 @@ module RDI
         # Create the installer
         @Installer = RDI::Installer.new(lAppRootDir)
         # Register the mute progress view
-        @Installer.registerNewPlugin(
+        @Installer.register_new_plugin(
           'ProgressViews',
           'MuteProgressView',
           nil,
@@ -183,8 +182,8 @@ module RDI
           nil
         )
         # And set it as the default progress view
-        @Installer.setDefaultOptions( {
-          :PreferredProgressViews => [ 'MuteProgressView' ]
+        @Installer.set_default_options( {
+          :preferred_progress_views => [ 'MuteProgressView' ]
         } )
 
         # Call the test code
@@ -193,8 +192,8 @@ module RDI
         # Remove the temporary application root dir
         FileUtils::rm_rf(lAppRootDir)
         # Put back the context
-        $rUtilAnts_Platform_Info.setSystemExePath(lSystemPath)
-        $rUtilAnts_Platform_Info.setSystemLibsPath(lLibsPath)
+        setSystemExePath(lSystemPath)
+        setSystemLibsPath(lLibsPath)
         $LOAD_PATH.replace(lLoadPath)
         if (defined?(Gem) != nil)
           Gem.clear_paths
@@ -208,12 +207,12 @@ module RDI
 
       # Setup a regresion UI before calling some code
       #
-      # Parameters:
+      # Parameters::
       # * *iClassName* (_String_): Class name of the View to be used
       # * *iLocationSelectorClassName* (_String_): Class name of the location selector [optional = nil]
       def setupRegressionUI(iClassName, iLocationSelectorClassName = nil)
         # Add a View plugin
-        @Installer.registerNewPlugin(
+        @Installer.register_new_plugin(
           'Views',
           'RegressionUI',
           nil,
@@ -223,7 +222,7 @@ module RDI
         )
         # Add the location selector
         if (iLocationSelectorClassName != nil)
-          @Installer.registerNewPlugin(
+          @Installer.register_new_plugin(
             'LocationSelectors_RegressionUI',
             'Directory',
             nil,
@@ -248,13 +247,13 @@ module RDI
       # Test that the API is correctly defined
       def testAPI
         setupAppDir do
-          @Installer.accessPlugin('Testers', @TesterPluginName) do |ioPlugin|
+          @Installer.access_plugin('Testers', @TesterPluginName) do |ioPlugin|
             assert(ioPlugin.is_a?(RDI::Model::Tester))
-            assert(ioPlugin.respond_to?(:isContentResolved?))
-            assert(ioPlugin.respond_to?(:getAffectingContextModifiers))
+            assert(ioPlugin.respond_to?(:is_content_resolved?))
+            assert(ioPlugin.respond_to?(:get_affecting_context_modifiers))
             # Test that returned Affecting Context Modifiers are valid.
-            lAvailableCMs = @Installer.getPluginNames('ContextModifiers')
-            ioPlugin.getAffectingContextModifiers.each do |iCMName|
+            lAvailableCMs = @Installer.get_plugins_names('ContextModifiers')
+            ioPlugin.get_affecting_context_modifiers.each do |iCMName|
               assert_equal(true, lAvailableCMs.include?(iCMName))
             end
           end
@@ -264,9 +263,9 @@ module RDI
       # Test that the dependency does not exist in an empty project
       def testMissingDep
         setupAppDir do
-          @Installer.accessPlugin('Testers', @TesterPluginName) do |ioPlugin|
+          @Installer.access_plugin('Testers', @TesterPluginName) do |ioPlugin|
             lContent = getTestContent
-            assert_equal(false, ioPlugin.isContentResolved?(lContent))
+            assert_equal(false, ioPlugin.is_content_resolved?(lContent))
           end
         end
       end
@@ -274,10 +273,10 @@ module RDI
       # Test that once installed, it detects the dependency as being present
       def testExistingDep
         setupAppDir do
-          @Installer.accessPlugin('Testers', @TesterPluginName) do |ioPlugin|
+          @Installer.access_plugin('Testers', @TesterPluginName) do |ioPlugin|
             lContent = getTestContent
             installTestContent
-            assert_equal(true, ioPlugin.isContentResolved?(lContent))
+            assert_equal(true, ioPlugin.is_content_resolved?(lContent))
             uninstallTestContent
           end
         end
@@ -297,11 +296,11 @@ module RDI
       # Test that the API is correctly defined
       def testAPI
         setupAppDir do
-          @Installer.accessPlugin('Installers', @InstallerPluginName) do |ioPlugin|
+          @Installer.access_plugin('Installers', @InstallerPluginName) do |ioPlugin|
             assert(ioPlugin.is_a?(RDI::Model::Installer))
-            assert(ioPlugin.respond_to?(:getPossibleDestinations))
-            assert(ioPlugin.respond_to?(:installDependency))
-            lDestinations = ioPlugin.getPossibleDestinations
+            assert(ioPlugin.respond_to?(:get_possible_destinations))
+            assert(ioPlugin.respond_to?(:install_dependency))
+            lDestinations = ioPlugin.get_possible_destinations
             assert(lDestinations.is_a?(Array))
             assert(lDestinations.size > 0)
             assert(lDestinations[0][0] != DEST_OTHER)
@@ -313,8 +312,11 @@ module RDI
               if (iFlavour == DEST_OTHER)
                 # Check that this selector location name exists for every GUI we have
                 assert(iLocation.is_a?(String))
-                @Installer.getPluginNames('Views').each do |iViewName|
-                  assert(@Installer.getPluginNames("LocationSelectors_#{iViewName}").include?(iLocation))
+                @Installer.get_plugins_names('Views').each do |iViewName|
+                  if ($RDITest_WX_Installed or
+                      (iViewName != 'SimpleWxGUI'))
+                    assert(@Installer.get_plugins_names("LocationSelectors_#{iViewName}").include?(iLocation))
+                  end
                 end
               end
             end
@@ -325,27 +327,28 @@ module RDI
       # Test that installing works correctly
       def testInstallDep
         setupAppDir do
-          @Installer.accessPlugin('Installers', @InstallerPluginName) do |ioPlugin|
+          @Installer.access_plugin('Installers', @InstallerPluginName) do |ioPlugin|
             lContent = getTestContent
             # Test installation on every possible location
-            ioPlugin.getPossibleDestinations.each do |iDestination|
+            ioPlugin.get_possible_destinations.each do |iDestination|
               iFlavour, iLocation = iDestination
-              lLocation = iLocation
-              if (iFlavour == DEST_OTHER)
-                # Use a temporary location
-                lLocation = getOtherLocation
-              end
+              # Use a temporary location if needed
+              lLocation = (iFlavour == DEST_OTHER) ? getOtherLocation : iLocation
               assert_equal(false, verifyInstalledContent(lLocation))
               # Protect from exceptions, to ensure that test content will be uninstalled
               begin
                 # Install the test content
-                ioPlugin.installDependency(lContent, lLocation)
+                lError = ioPlugin.install_dependency(lContent, lLocation)
+                if (lError != nil)
+                  log_err "Error encountered while installing using #{@InstallerPluginName}: #{lError}\n#{lError.backtrace.join("\n")}"
+                  assert false
+                end
               rescue Exception
                 # Log the exception for it to be seen
                 assert_equal(nil, $!)
               end
               # Verify
-              assert_equal(true, verifyInstalledContent(lLocation))
+              assert verifyInstalledContent(lLocation), "Content installed by installer #{@InstallerPluginName} differs from expected")
               # Remove
               uninstallTestContent(lLocation)
             end
@@ -364,18 +367,21 @@ module RDI
       # Test that the API is correctly defined
       def testAPI
         setupAppDir do
-          @Installer.accessPlugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
+          @Installer.access_plugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
             assert(ioPlugin.is_a?(RDI::Model::ContextModifier))
-            assert(ioPlugin.respond_to?(:getLocationSelectorName))
-            assert(ioPlugin.respond_to?(:transformContentWithInstallEnv))
-            assert(ioPlugin.respond_to?(:isLocationInContext?))
-            assert(ioPlugin.respond_to?(:addLocationToContext))
-            assert(ioPlugin.respond_to?(:removeLocationFromContext))
+            assert(ioPlugin.respond_to?(:get_location_selector_name))
+            assert(ioPlugin.respond_to?(:transform_content_with_install_env))
+            assert(ioPlugin.respond_to?(:is_location_in_context?))
+            assert(ioPlugin.respond_to?(:add_location_to_context))
+            assert(ioPlugin.respond_to?(:remove_location_from_context))
             # Check that the location selector name exists for every view we have.
-            lLocationSelectorName = ioPlugin.getLocationSelectorName
+            lLocationSelectorName = ioPlugin.get_location_selector_name
             assert(lLocationSelectorName.is_a?(String))
-            @Installer.getPluginNames('Views').each do |iViewName|
-              assert(@Installer.getPluginNames("LocationSelectors_#{iViewName}").include?(lLocationSelectorName))
+            @Installer.get_plugins_names('Views').each do |iViewName|
+              if ($RDITest_WX_Installed or
+                  (iViewName != 'SimpleWxGUI'))
+                assert(@Installer.get_plugins_names("LocationSelectors_#{iViewName}").include?(lLocationSelectorName))
+              end
             end
           end
         end
@@ -384,9 +390,9 @@ module RDI
       # Test missing location
       def testMissingLocation
         setupAppDir do
-          @Installer.accessPlugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
+          @Installer.access_plugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
             lLocation = getTestLocation
-            assert_equal(false, ioPlugin.isLocationInContext?(lLocation))
+            assert_equal(false, ioPlugin.is_location_in_context?(lLocation))
           end
         end
       end
@@ -394,11 +400,11 @@ module RDI
       # Test that adding locations works correctly
       def testAddLocation
         setupAppDir do
-          @Installer.accessPlugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
+          @Installer.access_plugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
             lLocation = getTestLocation
-            assert_equal(false, ioPlugin.isLocationInContext?(lLocation))
-            ioPlugin.addLocationToContext(lLocation)
-            assert_equal(true, ioPlugin.isLocationInContext?(lLocation))
+            assert_equal(false, ioPlugin.is_location_in_context?(lLocation))
+            ioPlugin.add_location_to_context(lLocation)
+            assert_equal(true, ioPlugin.is_location_in_context?(lLocation))
           end
         end
       end
@@ -406,13 +412,13 @@ module RDI
       # Test that removing locations works correctly
       def testRemoveLocation
         setupAppDir do
-          @Installer.accessPlugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
+          @Installer.access_plugin('ContextModifiers', @ContextModifierPluginName) do |ioPlugin|
             lLocation = getTestLocation
-            assert_equal(false, ioPlugin.isLocationInContext?(lLocation))
-            ioPlugin.addLocationToContext(lLocation)
-            assert_equal(true, ioPlugin.isLocationInContext?(lLocation))
-            ioPlugin.removeLocationFromContext(lLocation)
-            assert_equal(false, ioPlugin.isLocationInContext?(lLocation))
+            assert_equal(false, ioPlugin.is_location_in_context?(lLocation))
+            ioPlugin.add_location_to_context(lLocation)
+            assert_equal(true, ioPlugin.is_location_in_context?(lLocation))
+            ioPlugin.remove_location_from_context(lLocation)
+            assert_equal(false, ioPlugin.is_location_in_context?(lLocation))
           end
         end
       end
@@ -446,7 +452,7 @@ module RDI
       # Test that the API is correctly defined
       def testAPI
         setupAppDir do
-          @Installer.accessPlugin('Views', @ViewPluginName) do |ioPlugin|
+          @Installer.access_plugin('Views', @ViewPluginName) do |ioPlugin|
             assert(ioPlugin.is_a?(RDI::Model::View))
             assert(ioPlugin.respond_to?(:execute))
           end
@@ -456,9 +462,9 @@ module RDI
       # Default implementation for initScenario
       # To be rewritten by each View plugin test suite
       #
-      # Parameters:
+      # Parameters::
       # * *ioPlugin* (_Object_): The View plugin
-      # * *iScenario* (<em>list<[Integer,String,Object]></em>): The scenario
+      # * *iScenario* (<em>list< [Integer,String,Object] ></em>): The scenario
       # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
       def initScenario(ioPlugin, iScenario, iMissingDependencies)
         # Display it to the user for him to perform the actions
@@ -483,20 +489,20 @@ module RDI
           when ACTION_SELECT_AFFECTING_CONTEXTMODIFIER
             lStr += "Choose Locate ContextModifier #{iParameters[0]} using Location: #{iParameters[1]}"
           else
-            logBug "Unknown Action: #{iAction}"
+            log_bug "Unknown Action: #{iAction}"
           end
           lActionsStr << "#{lIdxAction} - #{lStr}"
           lIdxAction += 1
         end
         # Remove the logging silent mode before displaying
-        setLogMessagesStack(nil)
-        logMsg "Please perform the following:\n#{lActionsStr.join("\n")}"
+        set_log_messages_stack(nil)
+        log_msg "Please perform the following:\n#{lActionsStr.join("\n")}"
       end
 
       # Default implementation for finalScenario
       # To be rewritten by each View plugin test suite
       #
-      # Parameters:
+      # Parameters::
       # * *ioPlugin* (_Object_): The View plugin
       def finalScenario(ioPlugin)
         # Nothing to do
@@ -505,11 +511,11 @@ module RDI
       # Default implementation for executeScenario
       # To be rewritten by each View plugin test suite
       #
-      # Parameters:
+      # Parameters::
       # * *ioPlugin* (_Object_): The View plugin
       # * *ioInstaller* (_Installer_): The RDI installer
       # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
-      # Return:
+      # Return::
       # * <em>list<DependencyUserChoice></em>: The corresponding user choices
       def executeScenario(ioPlugin, ioInstaller, iMissingDependencies)
         return ioPlugin.execute(ioInstaller, iMissingDependencies)
@@ -517,12 +523,12 @@ module RDI
 
       # Setup a fake selector that always return a given value
       #
-      # Parameters:
+      # Parameters::
       # * *iSelectorName* (_String_): Name of the selector to modify
       # * *iLocation* (_Object_): Location to always give
       # * _CodeBlock_: The code to be executed once the fake selector is in place
       def setupFakeSelector(iSelectorName, iLocation)
-        @Installer.accessPlugin("LocationSelectors_#{@ViewPluginName}", iSelectorName) do |ioLSPlugin|
+        @Installer.access_plugin("LocationSelectors_#{@ViewPluginName}", iSelectorName) do |ioLSPlugin|
           # Replace temporarily its getNewLocation method
           ioLSPlugin.class.module_eval('alias :getNewLocation_ORG :getNewLocation')
           # Define the new one
@@ -545,10 +551,10 @@ alias :getNewLocation :getNewLocation_ORG
       # Get the dependency user choices from a scenario.
       # This is used to then compare if View plugins behave correctly
       #
-      # Parameters:
+      # Parameters::
       # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
-      # * *iScenario* (<em>list<[Integer,String,Object]></em>): The scenario
-      # Return:
+      # * *iScenario* (<em>list< [Integer,String,Object] ></em>): The scenario
+      # Return::
       # * <em>list<DependencyUserChoice></em>: The corresponding user choices
       def getUserChoicesFromScenario(iMissingDependencies, iScenario)
         rDepsUserChoices = []
@@ -572,18 +578,18 @@ alias :getNewLocation :getNewLocation_ORG
           end
           case iAction
           when ACTION_LOCATE
-            lDepUserChoice.setLocate
+            lDepUserChoice.set_locate
           when ACTION_IGNORE
-            lDepUserChoice.setIgnore
+            lDepUserChoice.set_ignore
           when ACTION_INSTALL
-            lDepUserChoice.setInstaller(iParameters[0], iParameters[1])
+            lDepUserChoice.set_installer(iParameters[0], iParameters[1])
             if (iParameters[2] != nil)
               # Make sure the LocationSelector returns iParameters[2]
               # Get the name of the selector
-              @Installer.accessPlugin('Installers', lDepUserChoice.DepDesc.Installers[iParameters[0]][0]) do |iInstallPlugin|
+              @Installer.access_plugin('Installers', lDepUserChoice.DepDesc.Installers[iParameters[0]][0]) do |iInstallPlugin|
                 lSelectorName = iInstallPlugin.PossibleDestinations[iParameters[1]][1]
                 setupFakeSelector(lSelectorName, iParameters[2]) do
-                  lDepUserChoice.selectOtherInstallLocation(lSelectorName)
+                  lDepUserChoice.select_other_install_location(lSelectorName)
                 end
               end
             end
@@ -591,15 +597,15 @@ alias :getNewLocation :getNewLocation_ORG
             break
           when ACTION_SELECT_AFFECTING_CONTEXTMODIFIER
             # Make sure the LocationSelector returns iParameters[1]
-            @Installer.accessPlugin('ContextModifiers', iParameters[0]) do |ioCMPlugin|
+            @Installer.access_plugin('ContextModifiers', iParameters[0]) do |ioCMPlugin|
               # Get the name of LocationSelector class to use
               lLocationSelectorName = ioCMPlugin.LocationSelectorName
               setupFakeSelector(lLocationSelectorName, iParameters[1]) do
-                lDepUserChoice.affectContextModifier(iParameters[0])
+                lDepUserChoice.affect_context_modifier(iParameters[0])
               end
             end
           else
-            logBug "Unknown Action: #{iAction}"
+            log_bug "Unknown Action: #{iAction}"
           end
         end
 
@@ -608,13 +614,13 @@ alias :getNewLocation :getNewLocation_ORG
 
       # Launches a scenario test
       #
-      # Parameters:
+      # Parameters::
       # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
-      # * *iScenario* (<em>list<[Integer,String,Object]></em>): The scenario
+      # * *iScenario* (<em>list< [Integer,String,Object] ></em>): The scenario
       def launchScenario(iMissingDependencies, iScenario)
         setupAppDir do
           lUserChoices = nil
-          @Installer.accessPlugin('Views', @ViewPluginName) do |ioPlugin|
+          @Installer.access_plugin('Views', @ViewPluginName) do |ioPlugin|
             # Create the scenario and prepare it to be run
             initScenario(ioPlugin, iScenario, iMissingDependencies)
             # Execute it
@@ -679,7 +685,7 @@ alias :getNewLocation :getNewLocation_ORG
         lIdxDest = 0
         lDesc = getSimpleDesc
         setupAppDir do
-          @Installer.accessPlugin('Installers', lDesc.Installers[0][0]) do |iPlugin|
+          @Installer.access_plugin('Installers', lDesc.Installers[0][0]) do |iPlugin|
             iPlugin.PossibleDestinations.each do |iDestInfo|
               iFlavour, iLocation = iDestInfo
               if (iFlavour == DEST_OTHER)
@@ -702,7 +708,7 @@ alias :getNewLocation :getNewLocation_ORG
         lIdxDest = 0
         lDesc = getSimpleDesc2
         setupAppDir do
-          @Installer.accessPlugin('Installers', lDesc.Installers[0][0]) do |iPlugin|
+          @Installer.access_plugin('Installers', lDesc.Installers[0][0]) do |iPlugin|
             iPlugin.PossibleDestinations.each do |iDestInfo|
               iFlavour, iLocation = iDestInfo
               if (iFlavour == DEST_OTHER)
@@ -783,15 +789,18 @@ alias :getNewLocation :getNewLocation_ORG
         setupAppDir do
           # Check that each view defines it
           # Get the list of views
-          @Installer.getPluginNames('Views').each do |iViewName|
-            # Install the dependencies automatically before calling the plugin (we don't want to ask the user about it)
-            lInstallMethod = "installDep_#{iViewName}".to_sym
-            if (respond_to?(lInstallMethod))
-              send(lInstallMethod)
-            end
-            @Installer.accessPlugin("LocationSelectors_#{iViewName}", @LocationSelectorPluginName) do |ioPlugin|
-              assert(ioPlugin.is_a?(RDI::Model::LocationSelector))
-              assert(ioPlugin.respond_to?(:getNewLocation))
+          @Installer.get_plugins_names('Views').each do |iViewName|
+            if ($RDITest_WX_Installed or
+                (iViewName != 'SimpleWxGUI'))
+              # Install the dependencies automatically before calling the plugin (we don't want to ask the user about it)
+              lInstallMethod = "installDep_#{iViewName}".to_sym
+              if (respond_to?(lInstallMethod))
+                send(lInstallMethod)
+              end
+              @Installer.access_plugin("LocationSelectors_#{iViewName}", @LocationSelectorPluginName) do |ioPlugin|
+                assert(ioPlugin.is_a?(RDI::Model::LocationSelector))
+                assert(ioPlugin.respond_to?(:getNewLocation))
+              end
             end
           end
         end

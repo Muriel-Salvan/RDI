@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -15,7 +15,7 @@ module RDI
         # Constructor
         # The notifier control window must have a notifyInstallDecisionChanged method implemented
         #
-        # Parameters:
+        # Parameters::
         # * *iParent* (<em>Wx::Window</em>): The parent window
         # * *ioInstaller* (_Installer_): The installer
         # * *iDepUserChoice* (_DependencyUserChoice_): The dependency's user choice
@@ -85,7 +85,7 @@ module RDI
           @DepUserChoice.DepDesc.Installers.each do |iInstallerInfo|
             iInstallerName, iInstallerContent, iContextModifiers = iInstallerInfo
             lDestinationComponents = @InstallerComponents[lIdxInstaller][2]
-            @Installer.accessPlugin('Installers', iInstallerName) do |iPlugin|
+            @Installer.access_plugin('Installers', iInstallerName) do |iPlugin|
               iPlugin.PossibleDestinations.each do |iDestInfo|
                 iFlavour, iLocation = iDestInfo
                 lFlavourText = nil
@@ -103,7 +103,7 @@ module RDI
                   lFlavourText = 'Other'
                   lDestLocation = "Choose #{iLocation}"
                 else
-                  logBug "Unknown flavour ID: #{iFlavour}"
+                  log_bug "Unknown flavour ID: #{iFlavour}"
                   lFlavourText = 'Unknown'
                 end
                 if (lDestinationComponents.empty?)
@@ -181,7 +181,7 @@ module RDI
           # Set events
           # Click on "Locate"
           evt_radiobutton(@RBLocate) do |iEvent|
-            @DepUserChoice.setLocate
+            @DepUserChoice.set_locate
             refreshComponents
           end
           # Click on any of the ACM
@@ -191,19 +191,19 @@ module RDI
             lACMIdxCloned = lACMIdx
             evt_button(iACMButton) do |iEvent|
               # Call the correct LocationSelector
-              @DepUserChoice.affectContextModifier(@DepUserChoice.AffectingContextModifiers[lACMIdxCloned])
+              @DepUserChoice.affect_context_modifier(@DepUserChoice.AffectingContextModifiers[lACMIdxCloned])
               refreshComponents
             end
             lACMIdx += 1
           end
           # Click on "Ignore"
           evt_radiobutton(@RBIgnore) do |iEvent|
-            @DepUserChoice.setIgnore
+            @DepUserChoice.set_ignore
             refreshComponents
           end
           # Click on "Install"
           evt_radiobutton(@RBInstall) do |iEvent|
-            @DepUserChoice.setInstaller(0, 0)
+            @DepUserChoice.set_installer(0, 0)
             refreshComponents
           end
           # Click on any of the installers
@@ -213,7 +213,7 @@ module RDI
             lIdxInstallerCloned = lIdxInstaller
             lRBInstaller, lSBIcon, lRBListDests = iInstallerComponentsInfo
             evt_radiobutton(lRBInstaller) do |iEvent|
-              @DepUserChoice.setInstaller(lIdxInstallerCloned, 0)
+              @DepUserChoice.set_installer(lIdxInstallerCloned, 0)
               refreshComponents
             end
             # Click on any of the destinations
@@ -221,12 +221,12 @@ module RDI
             lRBListDests.each do |iRBDestination|
               lIdxDestCloned = lIdxDest
               evt_radiobutton(iRBDestination) do |iEvent|
-                @DepUserChoice.setInstaller(lIdxInstallerCloned, lIdxDestCloned)
+                @DepUserChoice.set_installer(lIdxInstallerCloned, lIdxDestCloned)
                 # If it is DEST_OTHER, call the LocationSelector
-                @Installer.accessPlugin('Installers', @DepUserChoice.DepDesc.Installers[lIdxInstallerCloned][0]) do |iPlugin|
+                @Installer.access_plugin('Installers', @DepUserChoice.DepDesc.Installers[lIdxInstallerCloned][0]) do |iPlugin|
                   iFlavour, iLocation = iPlugin.PossibleDestinations[lIdxDestCloned]
                   if (iFlavour == DEST_OTHER)
-                    @DepUserChoice.selectOtherInstallLocation(iLocation)
+                    @DepUserChoice.select_other_install_location(iLocation)
                   end
                 end
                 refreshComponents
@@ -270,7 +270,7 @@ module RDI
                  (@DepUserChoice.IdxDestination == lIdxDest))
               )
               # Change the text if it is DEST_OTHER
-              @Installer.accessPlugin('Installers', @DepUserChoice.DepDesc.Installers[lIdxInstaller][0]) do |iPlugin|
+              @Installer.access_plugin('Installers', @DepUserChoice.DepDesc.Installers[lIdxInstaller][0]) do |iPlugin|
                 iFlavour, iLocation = iPlugin.PossibleDestinations[lIdxDest]
                 if (iFlavour == DEST_OTHER)
                   # If it is the current one, use OtherLocation

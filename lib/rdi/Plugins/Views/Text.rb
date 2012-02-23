@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -18,10 +18,10 @@ module RDI
       # * Ignore it
       # * Change the context to find it (select directory...)
       #
-      # Parameters:
+      # Parameters::
       # * *ioInstaller* (_Installer_): The RDI installer
       # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
-      # Return:
+      # Return::
       # * <em>list<DependencyUserChoice></em>: The corresponding user choices
       def execute(ioInstaller, iMissingDependencies)
         # List of corresponding dependencies user choices
@@ -70,7 +70,7 @@ module RDI
                 # Ask to modify the context somewhere
                 if (lUserChoice.size == 2)
                   # Just select that we locate it
-                  lDepUserChoice.setLocate
+                  lDepUserChoice.set_locate
                 else
                   # We try to use a given ContextModifier
                   if (lUserChoice.size == 3)
@@ -78,7 +78,7 @@ module RDI
                       lInvalid = true
                     else
                       # Select a new location for the given context modifier
-                      lDepUserChoice.affectContextModifier(lDepUserChoice.AffectingContextModifiers[lUserChoice[2]-1])
+                      lDepUserChoice.affect_context_modifier(lDepUserChoice.AffectingContextModifiers[lUserChoice[2]-1])
                     end
                   else
                     lInvalid = true
@@ -87,7 +87,7 @@ module RDI
               when 2
                 # Ask to ignore the dependency
                 if (lUserChoice.size == 2)
-                  lDepUserChoice.setIgnore
+                  lDepUserChoice.set_ignore
                 else
                   lInvalid = true
                 end
@@ -99,16 +99,16 @@ module RDI
                   else
                     lInstallerName, lInstallerContent, lContextModifiers = lDepDesc.Installers[lUserChoice[2]-1]
                     # Access the possible destinations
-                    ioInstaller.accessPlugin('Installers', lInstallerName) do |ioPlugin|
+                    ioInstaller.access_plugin('Installers', lInstallerName) do |ioPlugin|
                       if (lUserChoice[3] > ioPlugin.PossibleDestinations.size)
                         lInvalid = true
                       else
-                        lDepUserChoice.setInstaller(lUserChoice[2]-1, lUserChoice[3]-1)
+                        lDepUserChoice.set_installer(lUserChoice[2]-1, lUserChoice[3]-1)
                         # Check if it is a DEST_OTHER flavour
                         if (ioPlugin.PossibleDestinations[lUserChoice[3]-1][0] == DEST_OTHER)
                           # Replace the other location of this dependency
-                          if (!lDepUserChoice.selectOtherInstallLocation(ioPlugin.PossibleDestinations[lUserChoice[3]-1][1]))
-                            lDepUserChoice.setInstaller(lUserChoice[2]-1, 0)
+                          if (!lDepUserChoice.select_other_install_location(ioPlugin.PossibleDestinations[lUserChoice[3]-1][1]))
+                            lDepUserChoice.set_installer(lUserChoice[2]-1, 0)
                           end
                         end
                       end
@@ -135,7 +135,7 @@ module RDI
 
       # Display the current state
       #
-      # Parameters:
+      # Parameters::
       # * *ioInstaller* (_Installer_): The RDI installer
       # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
       # * *iDepsUserChoices* (<em>list<DependencyUserChoice></em>): The corresponding user choices
@@ -207,7 +207,7 @@ module RDI
             end
             puts "    #{lIdxMissingDeps}.3.#{lIdxInstaller}. (#{lInstallSelectionText}) #{iInstallerName} - #{iInstallerContent}"
             puts '               Install in:'
-            ioInstaller.accessPlugin('Installers', iInstallerName) do |iPlugin|
+            ioInstaller.access_plugin('Installers', iInstallerName) do |iPlugin|
               lIdxDest = 1
               iPlugin.PossibleDestinations.each do |iDestInfo|
                 iDestFlavour, iDestLocation = iDestInfo
@@ -230,7 +230,7 @@ module RDI
                     lDestLocation = 'Choose'
                   end
                 else
-                  logBug "Unknown flavour ID: #{iDestFlavour}"
+                  log_bug "Unknown flavour ID: #{iDestFlavour}"
                   lFlavourText = 'Unknown'
                 end
                 lInstallLocationSelectionText = ' '

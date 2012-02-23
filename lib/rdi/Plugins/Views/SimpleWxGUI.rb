@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -18,10 +18,10 @@ module RDI
       # * Ignore it
       # * Change the context to find it (select directory...)
       #
-      # Parameters:
+      # Parameters::
       # * *ioInstaller* (_Installer_): The RDI installer
       # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
-      # Return:
+      # Return::
       # * <em>list<DependencyUserChoice></em>: The corresponding user choices
       def execute(ioInstaller, iMissingDependencies)
         # List of corresponding dependencies user choices
@@ -38,9 +38,9 @@ module RDI
           require 'rUtilAnts/GUI'
           RUtilAnts::GUI.initializeGUI
         end
-        if (defined?($rUtilAnts_URLCache) == nil)
+        if (defined?(RUtilAnts::URLCache) == nil)
           require 'rUtilAnts/URLCache'
-          RUtilAnts::URLCache.initializeURLCache
+          RUtilAnts::URLCache.install_url_cache_on_object
         end
         # If an application is already running, use it
         require 'rdi/Plugins/WxCommon'

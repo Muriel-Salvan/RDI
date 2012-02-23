@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -13,21 +13,21 @@ module RDI
 
       # Get the name of classes that provide selection facility for locations
       #
-      # Return:
+      # Return::
       # * _String_: The name of the LocationSelector class
-      def getLocationSelectorName
+      def get_location_selector_name
         return 'Directory'
       end
 
       # Transform a given content based on an installation environment.
       # This is called to pass some specific installation parameters to a more generic content (useful for installation directories for example)
       #
-      # Parameters:
+      # Parameters::
       # * *iLocation* (_Object_): Location to transform
       # * *iInstallEnv* (<em>map<Symbol,Object></em>): The installation environment that called this context modification
-      # Return:
+      # Return::
       # * _Object_: The location transformed with the installation environment
-      def transformContentWithInstallEnv(iLocation, iInstallEnv)
+      def transform_content_with_install_env(iLocation, iInstallEnv)
         rNewLocation = iLocation
 
         lInstallDir = iInstallEnv[:InstallDir]
@@ -40,31 +40,31 @@ module RDI
 
       # Is a given location present in the context ?
       #
-      # Parameters:
+      # Parameters::
       # * *iLocation* (_Object_): Location to add
-      # Return:
+      # Return::
       # * _Boolean_: Is the location already present ?
-      def isLocationInContext?(iLocation)
+      def is_location_in_context?(iLocation)
         # * *iLocation* (_String_): Directory
-        return $rUtilAnts_Platform_Info.getSystemExePath.include?(iLocation)
+        return getSystemExePath.include?(iLocation)
       end
 
       # Add a given location to the context
       #
-      # Parameters:
+      # Parameters::
       # * *iLocation* (_Object_): Location to add
-      def addLocationToContext(iLocation)
+      def add_location_to_context(iLocation)
         # * *iLocation* (_String_): Directory
-        $rUtilAnts_Platform_Info.setSystemExePath($rUtilAnts_Platform_Info.getSystemExePath + [ iLocation ])
+        setSystemExePath(getSystemExePath + [ iLocation ])
       end
 
       # Remove a given location from the context
       #
-      # Parameters:
+      # Parameters::
       # * *iLocation* (_Object_): Location to remove
-      def removeLocationFromContext(iLocation)
+      def remove_location_from_context(iLocation)
         # * *iLocation* (_String_): Directory
-        $rUtilAnts_Platform_Info.setSystemExePath($rUtilAnts_Platform_Info.getSystemExePath - [ iLocation ])
+        setSystemExePath(getSystemExePath - [ iLocation ])
       end
 
     end

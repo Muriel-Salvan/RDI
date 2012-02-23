@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -44,7 +44,7 @@ module RDI
 
       # Constructor
       #
-      # Parameters:
+      # Parameters::
       # * *ioInstaller* (_Installer_): RDI's installer used to query plugins
       # * *iViewName* (_String_): Name of the view to use
       # * *iDepDesc* (_DependencyDescription_): The dependency description to handle
@@ -56,23 +56,23 @@ module RDI
         @IdxDestination = 0
         @ResolvedTesters = {}
         @OtherLocation = nil
-        @AffectingContextModifiers = DependencyUserChoice::getAffectingContextModifiers(@Installer, @DepDesc)
+        @AffectingContextModifiers = DependencyUserChoice::get_affecting_context_modifiers(@Installer, @DepDesc)
       end
 
       # Compute the list of AffectingContextModifiers
       #
-      # Parameters:
+      # Parameters::
       # * *ioInstaller* (_Installer_): The installer
       # * *iDepDesc* (_DependencyDescription_): The dependency description
-      # Return:
+      # Return::
       # * <em>list<String></em>: The list of ContextModifiers names
-      def self.getAffectingContextModifiers(ioInstaller, iDepDesc)
+      def self.get_affecting_context_modifiers(ioInstaller, iDepDesc)
         rAffectingContextModifiers = []
 
         # Gather the list of affecting ContextModifiers by parsing every Tester.
         iDepDesc.Testers.each do |iTesterInfo|
           iTesterName, iTesterContent = iTesterInfo
-          ioInstaller.accessPlugin('Testers', iTesterName) do |iPlugin|
+          ioInstaller.access_plugin('Testers', iTesterName) do |iPlugin|
             rAffectingContextModifiers = (rAffectingContextModifiers + iPlugin.AffectingContextModifiers).uniq
           end
         end
@@ -82,37 +82,37 @@ module RDI
 
       # Ask the user to change the context of a given context modifier to resolve this dependency
       #
-      # Parameters:
+      # Parameters::
       # * *iCMName* (_String_): Name of the ContextModifier we want to use
-      def affectContextModifier(iCMName)
-        @Installer.accessPlugin('ContextModifiers', iCMName) do |ioPlugin|
+      def affect_context_modifier(iCMName)
+        @Installer.access_plugin('ContextModifiers', iCMName) do |ioPlugin|
           # Get the name of LocationSelector class to use
           lLocationSelectorName = ioPlugin.LocationSelectorName
-          @Installer.accessPlugin("LocationSelectors_#{@ViewName}", lLocationSelectorName) do |iLSPlugin|
+          @Installer.access_plugin("LocationSelectors_#{@ViewName}", lLocationSelectorName) do |iLSPlugin|
             # Get the location from the plugin
             lLocationToTry = iLSPlugin.getNewLocation
             if (lLocationToTry != nil)
               # Try adding this new location if not already there
-              if (ioPlugin.isLocationInContext?(lLocationToTry))
-                logMsg "Location #{lLocationToTry} is already part of #{iCMName}"
+              if (ioPlugin.is_location_in_context?(lLocationToTry))
+                log_msg "Location #{lLocationToTry} is already part of #{iCMName}"
               else
                 # Add it
-                ioPlugin.addLocationToContext(lLocationToTry)
+                ioPlugin.add_location_to_context(lLocationToTry)
                 # Test Testers that were not already resolved
                 lIdxTester = 0
                 @DepDesc.Testers.each do |iTesterInfo|
                   if (!@ResolvedTesters.has_key?(lIdxTester))
                     # Test this one
                     iTesterName, iTesterContent = iTesterInfo
-                    @Installer.accessPlugin('Testers', iTesterName) do |iTesterPlugin|
+                    @Installer.access_plugin('Testers', iTesterName) do |iTesterPlugin|
                       # Consider it only if it declares iCMName as an AffectingContextModifier
                       if (iTesterPlugin.AffectingContextModifiers.include?(iCMName))
-                        if (iTesterPlugin.isContentResolved?(iTesterContent))
+                        if (iTesterPlugin.is_content_resolved?(iTesterContent))
                           # Yes, it resolved this one
                           @ResolvedTesters[lIdxTester] = [ iCMName, lLocationToTry ]
-                          logMsg "Location #{lLocationToTry} resolves correctly #{iTesterName} - #{iTesterContent}"
+                          log_msg "Location #{lLocationToTry} resolves correctly #{iTesterName} - #{iTesterContent}"
                         else
-                          logErr "Location #{lLocationToTry} does not resolve #{iTesterName} - #{iTesterContent}"
+                          log_err "Location #{lLocationToTry} does not resolve #{iTesterName} - #{iTesterContent}"
                         end
                       end
                     end
@@ -120,7 +120,7 @@ module RDI
                   lIdxTester += 1
                 end
                 # Remove it
-                ioPlugin.removeLocationFromContext(lLocationToTry)
+                ioPlugin.remove_location_from_context(lLocationToTry)
               end
             end
           end
@@ -129,14 +129,14 @@ module RDI
 
       # Select a different install location for this dependency
       #
-      # Parameters:
+      # Parameters::
       # * *iLocationSelectorName* (_String_): The location selector name
-      # Return:
+      # Return::
       # * _Boolean_: Is the selection valid ?
-      def selectOtherInstallLocation(iLocationSelectorName)
+      def select_other_install_location(iLocationSelectorName)
         rSuccess = false
 
-        @Installer.accessPlugin("LocationSelectors_#{@ViewName}", iLocationSelectorName) do |iPlugin|
+        @Installer.access_plugin("LocationSelectors_#{@ViewName}", iLocationSelectorName) do |iPlugin|
           # Get the location from the plugin
           lInstallLocation = iPlugin.getNewLocation
           if (lInstallLocation != nil)
@@ -149,7 +149,7 @@ module RDI
       end
 
       # Set this choice to be "locate it"
-      def setLocate
+      def set_locate
         @Ignore = false
         @Locate = true
         @IdxInstaller = nil
@@ -157,7 +157,7 @@ module RDI
       end
 
       # Set this choice to be "ignore it"
-      def setIgnore
+      def set_ignore
         @Ignore = true
         @Locate = false
         @IdxInstaller = nil
@@ -166,10 +166,10 @@ module RDI
 
       # Set this choice to be "install it"
       #
-      # Parameters:
+      # Parameters::
       # * *iIdxInstaller* (_Integer_): The Installer's index
       # * *iIdxDestination* (_Integer_): The destination's index
-      def setInstaller(iIdxInstaller, iIdxDestination)
+      def set_installer(iIdxInstaller, iIdxDestination)
         @Ignore = false
         @Locate = false
         @IdxInstaller = iIdxInstaller
@@ -179,9 +179,9 @@ module RDI
       # Do we equal another user choice ?
       # Used by the regression
       #
-      # Parameters:
+      # Parameters::
       # * *iOtherDUC* (_DependencyOtherChoice_): The other one
-      # Return:
+      # Return::
       # * _Boolean_: Do we equal another user choice ?
       def ==(iOtherDUC)
         return (

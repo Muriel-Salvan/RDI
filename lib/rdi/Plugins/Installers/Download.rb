@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -13,9 +13,9 @@ module RDI
 
       # Get the list of possible destinations
       #
-      # Return:
-      # * <em>list<[Integer,Object]></em>: The list of possible destinations and their corresponding installation location (or location selector name for DEST_OTHER)
-      def getPossibleDestinations
+      # Return::
+      # * <em>list< [Integer,Object] ></em>: The list of possible destinations and their corresponding installation location (or location selector name for DEST_OTHER)
+      def get_possible_destinations
         return [
           [ DEST_LOCAL, "#{@Installer.ExtDir}/Downloads" ],
           [ DEST_SYSTEM, @Installer.SystemDir ],
@@ -27,13 +27,13 @@ module RDI
 
       # Install a dependency
       #
-      # Parameters:
+      # Parameters::
       # * *iContent* (_Object_): The dependency's content
       # * *iLocation* (_Object_): The installation location
       # * *ioInstallEnv* (<em>map<Symbol,Object></em>): The installed environment, that can be modified here. Stored variables will the be accessible to ContextModifiers. [optional = {}]
-      # Return:
+      # Return::
       # * _Exception_: The error, or nil in case of success
-      def installDependency(iContent, iLocation, ioInstallEnv = {})
+      def install_dependency(iContent, iLocation, ioInstallEnv = {})
         # * *iContent* (_String_): The URL
         # * *iLocation* (_String_): The directory to install to
         rError = nil
@@ -41,11 +41,11 @@ module RDI
         # Download the URL
         # The URL can be a zip file, a targz, a direct file ...
         # Don't use URL caching.
-        accessFile(iContent, { :LocalFileAccess => true }) do |iLocalFileName, iBaseName|
+        access_file(iContent, :local_file_access => true) do |iLocalFileName, iBaseName|
           case File.extname(iLocalFileName).upcase
           when '.ZIP'
             # Unzip before
-            rError = extractZipFile(iLocalFileName, iLocation)
+            rError = extract_zip_file(iLocalFileName, iLocation)
             if (rError != nil)
               rError = RuntimeError.new("Error while unzipping from #{iLocalFileName} to #{iLocation}:\n#{rError}")
             end

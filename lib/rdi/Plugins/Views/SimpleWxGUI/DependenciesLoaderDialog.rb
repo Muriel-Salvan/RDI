@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -15,7 +15,7 @@ module RDI
 
         # Constructor
         #
-        # Parameters:
+        # Parameters::
         # * *iParent* (<em>Wx::Window</em>): The parent
         # * *ioInstaller* (_Installer_): The installer
         # * *iDepsUserChoices* (<em>list<DependencyUserChoice></em>): The dependency user choices to reflect in this dialog
@@ -100,7 +100,7 @@ module RDI
 
         # A panel has been refreshed
         #
-        # Parameters:
+        # Parameters::
         # * *iPanel* (<em>Wx::Panel</em>): The panel just refreshed
         def notifyRefresh(iPanel)
           if (!@DuringInit)

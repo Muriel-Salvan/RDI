@@ -1,11 +1,11 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
 require 'rdi/Model/Installer'
 require 'rUtilAnts/Misc'
-RUtilAnts::Misc::initializeMisc
+RUtilAnts::Misc::install_misc_on_object
 
 module RDI
 
@@ -15,13 +15,13 @@ module RDI
 
       # Install a dependency
       #
-      # Parameters:
+      # Parameters::
       # * *iContent* (_Object_): The dependency's content
       # * *iLocation* (_Object_): The installation location
       # * *ioInstallEnv* (<em>map<Symbol,Object></em>): The installed environment, that can be modified here. Stored variables will the be accessible to ContextModifiers. [optional = {}]
-      # Return:
+      # Return::
       # * _Exception_: The error, or nil in case of success
-      def installDependency(iContent, iLocation, ioInstallEnv = {})
+      def install_dependency(iContent, iLocation, ioInstallEnv = {})
         # * *iContent* (<em>[String,Proc]</em>): The URL and the code to install
         # * *iLocation* (_String_): The directory to install to
         rError = nil
@@ -34,7 +34,7 @@ module RDI
         rError = super(iURL, lTmpDir)
         if (rError == nil)
           # And then we execute the command to install it
-          changeDir(lTmpDir) do
+          change_dir(lTmpDir) do
             if (iCmdProc.call(iLocation))
               # Remove temporary directory
               FileUtils::rm_rf(lTmpDir)

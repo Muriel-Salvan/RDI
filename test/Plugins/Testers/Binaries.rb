@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -21,7 +21,7 @@ module RDI
 
         # Get a test content
         #
-        # Return:
+        # Return::
         # * _Object_: Content of the given Tester to be tested
         def getTestContent
           return [ 'DummyBinary' ]
@@ -29,12 +29,12 @@ module RDI
 
         # Install the test content
         def installTestContent
-          $rUtilAnts_Platform_Info.setSystemExePath($rUtilAnts_Platform_Info.getSystemExePath + [ "#{@RepositoryDir}/Binaries" ])
+          setSystemExePath(getSystemExePath + [ "#{@RepositoryDir}/Binaries" ])
         end
 
         # Uninstall the test content
         def uninstallTestContent
-          $rUtilAnts_Platform_Info.setSystemExePath($rUtilAnts_Platform_Info.getSystemExePath - [ "#{@RepositoryDir}/Binaries" ])
+          setSystemExePath(getSystemExePath - [ "#{@RepositoryDir}/Binaries" ])
         end
 
       end

@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -20,7 +20,7 @@ module RDI
           # Install Gems if needed
           require 'rdi/Plugins/RubyGemsDepDesc'
           setupAppDir do
-            @Installer.ensureDependencies( [
+            @Installer.ensure_dependencies( [
               # RubyGems
               RDI::getRubyGemsDepDesc
             ] )
@@ -29,7 +29,7 @@ module RDI
 
         # Get a test location
         #
-        # Return:
+        # Return::
         # * _Object_: Location of the given ContextModifier to be tested
         def getTestLocation
           return 'DummyLocation'

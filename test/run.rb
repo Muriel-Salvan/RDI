@@ -1,12 +1,18 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
 # Run the test suite of RDI
 
-lTestDir = File.dirname(__FILE__)
+# Set to true to enable tests using WxRuby
+$RDITest_WX_Installed = false
+
+lRootDir = File.expand_path("#{File.dirname(__FILE__)}/..")
+lTestDir = "#{lRootDir}/test"
+
 $LOAD_PATH << lTestDir
+$LOAD_PATH << "#{lRootDir}/lib"
 
 require 'Common'
 

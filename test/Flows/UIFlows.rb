@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -37,7 +37,7 @@ module RDI
 
             # Give user the choice of a new location
             #
-            # Return:
+            # Return::
             # * _Object_: A location, or nil if none selected
             def getNewLocation
               @Called = true
@@ -88,10 +88,10 @@ module RDI
           # * Ignore it
           # * Change the context to find it (select directory...)
           #
-          # Parameters:
+          # Parameters::
           # * *ioInstaller* (_Installer_): The RDI installer
           # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
-          # Return:
+          # Return::
           # * <em>list<DependencyUserChoice></em>: The corresponding user choices
           def execute(ioInstaller, iMissingDependencies)
             # List of corresponding dependencies user choices
@@ -105,26 +105,26 @@ module RDI
             end
             if (@Ignore)
               rDependenciesUserChoices.each do |ioDepUserChoice|
-                ioDepUserChoice.setIgnore
+                ioDepUserChoice.set_ignore
               end
             elsif (@Locate)
               rDependenciesUserChoices.each do |ioDepUserChoice|
-                ioDepUserChoice.setLocate
-                ioDepUserChoice.affectContextModifier('SystemPath')
+                ioDepUserChoice.set_locate
+                ioDepUserChoice.affect_context_modifier('SystemPath')
               end
             elsif (@InstallOtherLocation)
               # We want to install to another location
               rDependenciesUserChoices.each do |ioDepUserChoice|
                 iInstallName, iInstallContent, iContextModifiers = ioDepUserChoice.DepDesc.Installers[0]
                 # Read the installer plugin
-                ioInstaller.accessPlugin('Installers', iInstallName) do |iPlugin|
+                ioInstaller.access_plugin('Installers', iInstallName) do |iPlugin|
                   lIdx = 0
                   iPlugin.PossibleDestinations.each do |iDestInfo|
                     iFlavour, iLocation = iDestInfo
                     if (iFlavour == DEST_OTHER)
                       # Found it
-                      ioDepUserChoice.setInstaller(0, lIdx)
-                      ioDepUserChoice.selectOtherInstallLocation(iLocation)
+                      ioDepUserChoice.set_installer(0, lIdx)
+                      ioDepUserChoice.select_other_install_location(iLocation)
                       break
                     end
                     lIdx += 1
@@ -137,13 +137,13 @@ module RDI
               rDependenciesUserChoices.each do |ioDepUserChoice|
                 iInstallName, iInstallContent, iContextModifiers = ioDepUserChoice.DepDesc.Installers[0]
                 # Read the installer plugin
-                ioInstaller.accessPlugin('Installers', iInstallName) do |iPlugin|
+                ioInstaller.access_plugin('Installers', iInstallName) do |iPlugin|
                   lIdx = 0
                   iPlugin.PossibleDestinations.each do |iDestInfo|
                     iFlavour, iLocation = iDestInfo
                     if (iFlavour == DEST_LOCAL)
                       # Found it
-                      ioDepUserChoice.setInstaller(0, lIdx)
+                      ioDepUserChoice.set_installer(0, lIdx)
                       @InstallLocation = iLocation
                       break
                     end
@@ -165,11 +165,11 @@ module RDI
             setupRegressionUI('RDI::Test::Flows::UIFlows::RegressionUI') do
               # Call the installer expecting the GUI to appear
               lDesc = getSimpleDesc
-              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
-                :PreferredViews => [ 'RegressionUI' ]
+              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensure_dependencies( [ lDesc ], {
+                :preferred_views => [ 'RegressionUI' ]
               } )
               # Get the plugin back
-              @Installer.accessPlugin('Views', 'RegressionUI') do |iPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |iPlugin|
                 # Check that it was called correctly
                 lCalled = iPlugin.Called
               end
@@ -186,19 +186,19 @@ module RDI
               # Call the installer expecting the GUI to appear
               lDesc = getSimpleDesc
               # First install the dependency
-              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
-                :AutoInstall => DEST_LOCAL
+              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensure_dependencies( [ lDesc ], {
+                :auto_install => DEST_LOCAL
               } )
               # Then try again with UI
-              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
-                :PreferredViews => [ 'RegressionUI' ]
+              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensure_dependencies( [ lDesc ], {
+                :preferred_views => [ 'RegressionUI' ]
               } )
               assert_equal(nil, lError)
               assert_equal( {}, lCMApplied )
               assert_equal( [], lIgnoredDeps )
               assert_equal( [], lUnresolvedDeps )
               # Get the plugin back
-              @Installer.accessPlugin('Views', 'RegressionUI') do |iPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |iPlugin|
                 # Check that it was called correctly
                 lCalled = iPlugin.Called
               end
@@ -214,22 +214,22 @@ module RDI
             setupRegressionUI('RDI::Test::Flows::UIFlows::RegressionUI') do
               # Call the installer expecting the GUI to appear
               lDesc = getSimpleDesc
-              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
-                :PossibleContextModifiers => {
+              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensure_dependencies( [ lDesc ], {
+                :possible_context_modifiers => {
                   'DummyBinary' => [
                     [
                       [ 'SystemPath', "#{@RepositoryDir}/Binaries" ]
                     ]
                   ]
                 },
-                :PreferredViews => [ 'RegressionUI' ]
+                :preferred_views => [ 'RegressionUI' ]
               } )
               assert_equal(nil, lError)
               assert_equal( { 'DummyBinary' => [ [ 'SystemPath', "#{@RepositoryDir}/Binaries" ] ] }, lCMApplied )
               assert_equal( [], lIgnoredDeps )
               assert_equal( [], lUnresolvedDeps )
               # Get the plugin back
-              @Installer.accessPlugin('Views', 'RegressionUI') do |iPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |iPlugin|
                 # Check that it was called correctly
                 lCalled = iPlugin.Called
               end
@@ -245,14 +245,14 @@ module RDI
             setupRegressionUI('RDI::Test::Flows::UIFlows::RegressionUI') do
               # Call the installer expecting the GUI to appear
               lDesc = getSimpleDesc
-              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
-                :PreferredViews => [ 'RegressionUI' ]
+              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensure_dependencies( [ lDesc ], {
+                :preferred_views => [ 'RegressionUI' ]
               } )
               assert_equal(nil, lError)
               assert_equal( [], lIgnoredDeps )
               assert_equal( [], lUnresolvedDeps )
               # Get the plugin back
-              @Installer.accessPlugin('Views', 'RegressionUI') do |iPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |iPlugin|
                 # Check that it was called correctly
                 lCalled = iPlugin.Called
                 assert_equal( { 'DummyBinary' => [ [ 'SystemPath', iPlugin.InstallLocation ] ] }, lCMApplied )
@@ -271,23 +271,23 @@ module RDI
             setupRegressionUI('RDI::Test::Flows::UIFlows::RegressionUI') do
               # Call the installer expecting the GUI to appear
               lDesc = getSimpleDesc
-              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
-                :PreferredViews => [ 'RegressionUI' ]
+              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensure_dependencies( [ lDesc ], {
+                :preferred_views => [ 'RegressionUI' ]
               } )
               # Check results
               assert_equal(nil, lError)
               assert_equal( [], lIgnoredDeps )
               assert_equal( [], lUnresolvedDeps )
               # Get the plugin back
-              @Installer.accessPlugin('Views', 'RegressionUI') do |iPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |iPlugin|
                 # Check that it was called correctly
                 lCalled = iPlugin.Called
                 # Get the first install destination (this is where it will be installed
                 assert_equal( { 'DummyBinary' => [ [ 'SystemPath', iPlugin.InstallLocation ] ] }, lCMApplied )
               end
               # Check that the dependency is resolved
-              @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-                assert_equal(true, iPlugin.isContentResolved?(['DummyBinary']))
+              @Installer.access_plugin('Testers', 'Binaries') do |iPlugin|
+                assert_equal(true, iPlugin.is_content_resolved?(['DummyBinary']))
               end
             end
           end
@@ -300,13 +300,13 @@ module RDI
           setupAppDir do
             setupRegressionUI('RDI::Test::Flows::UIFlows::RegressionUI') do
               # Tune the UI's behaviour
-              @Installer.accessPlugin('Views', 'RegressionUI') do |ioPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |ioPlugin|
                 ioPlugin.Ignore = true
               end
               # Call the installer expecting the GUI to appear
               lDesc = getSimpleDesc
-              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
-                :PreferredViews => [ 'RegressionUI' ]
+              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensure_dependencies( [ lDesc ], {
+                :preferred_views => [ 'RegressionUI' ]
               } )
               # Check results
               assert_equal(nil, lError)
@@ -314,13 +314,13 @@ module RDI
               assert_equal( [ lDesc ], lIgnoredDeps )
               assert_equal( [], lUnresolvedDeps )
               # Get the plugin back
-              @Installer.accessPlugin('Views', 'RegressionUI') do |iPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |iPlugin|
                 # Check that it was called correctly
                 lCalled = iPlugin.Called
               end
               # Check that the dependency is not resolved
-              @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-                assert_equal(false, iPlugin.isContentResolved?(['DummyBinary']))
+              @Installer.access_plugin('Testers', 'Binaries') do |iPlugin|
+                assert_equal(false, iPlugin.is_content_resolved?(['DummyBinary']))
               end
             end
           end
@@ -334,16 +334,16 @@ module RDI
           setupAppDir do
             setupRegressionUI('RDI::Test::Flows::UIFlows::RegressionUI', 'RDI::Test::Flows::UIFlows::RegressionUI::Directory') do
               # Tune the UI's behaviour
-              @Installer.accessPlugin('Views', 'RegressionUI') do |ioPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |ioPlugin|
                 ioPlugin.Locate = true
               end
-              @Installer.accessPlugin('LocationSelectors_RegressionUI', 'Directory') do |ioPlugin|
+              @Installer.access_plugin('LocationSelectors_RegressionUI', 'Directory') do |ioPlugin|
                 ioPlugin.Directory = "#{@RepositoryDir}/Binaries"
               end
               # Call the installer expecting the GUI to appear
               lDesc = getSimpleDesc
-              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
-                :PreferredViews => [ 'RegressionUI' ]
+              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensure_dependencies( [ lDesc ], {
+                :preferred_views => [ 'RegressionUI' ]
               } )
               # Check results
               assert_equal(nil, lError)
@@ -351,17 +351,17 @@ module RDI
               assert_equal( [], lIgnoredDeps )
               assert_equal( [], lUnresolvedDeps )
               # Get the plugins back
-              @Installer.accessPlugin('Views', 'RegressionUI') do |iPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |iPlugin|
                 # Check that it was called correctly
                 lCalled = iPlugin.Called
               end
-              @Installer.accessPlugin('LocationSelectors_RegressionUI', 'Directory') do |iPlugin|
+              @Installer.access_plugin('LocationSelectors_RegressionUI', 'Directory') do |iPlugin|
                 # Check that it was called correctly
                 lLocatorCalled = iPlugin.Called
               end
               # Check that the dependency is resolved
-              @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-                assert_equal(true, iPlugin.isContentResolved?(['DummyBinary']))
+              @Installer.access_plugin('Testers', 'Binaries') do |iPlugin|
+                assert_equal(true, iPlugin.is_content_resolved?(['DummyBinary']))
               end
             end
           end
@@ -376,17 +376,17 @@ module RDI
           setupAppDir do
             setupRegressionUI('RDI::Test::Flows::UIFlows::RegressionUI', 'RDI::Test::Flows::UIFlows::RegressionUI::Directory') do
               # Tune the UI's behaviour
-              @Installer.accessPlugin('Views', 'RegressionUI') do |ioPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |ioPlugin|
                 ioPlugin.Locate = true
               end
-              @Installer.accessPlugin('LocationSelectors_RegressionUI', 'Directory') do |ioPlugin|
+              @Installer.access_plugin('LocationSelectors_RegressionUI', 'Directory') do |ioPlugin|
                 # We give a wrong directory here
                 ioPlugin.Directory = "#{@RepositoryDir}/Libraries"
               end
               # Call the installer expecting the GUI to appear
               lDesc = getSimpleDesc
-              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
-                :PreferredViews => [ 'RegressionUI' ]
+              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensure_dependencies( [ lDesc ], {
+                :preferred_views => [ 'RegressionUI' ]
               } )
               # Check results
               assert_equal(nil, lError)
@@ -394,17 +394,17 @@ module RDI
               assert_equal( [], lIgnoredDeps )
               assert_equal( [ lDesc ], lUnresolvedDeps )
               # Get the plugins back
-              @Installer.accessPlugin('Views', 'RegressionUI') do |iPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |iPlugin|
                 # Check that it was called correctly
                 lCalled = iPlugin.Called
               end
-              @Installer.accessPlugin('LocationSelectors_RegressionUI', 'Directory') do |iPlugin|
+              @Installer.access_plugin('LocationSelectors_RegressionUI', 'Directory') do |iPlugin|
                 # Check that it was called correctly
                 lLocatorCalled = iPlugin.Called
               end
               # Check that the dependency is resolved
-              @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-                assert_equal(false, iPlugin.isContentResolved?(['DummyBinary']))
+              @Installer.access_plugin('Testers', 'Binaries') do |iPlugin|
+                assert_equal(false, iPlugin.is_content_resolved?(['DummyBinary']))
               end
             end
           end
@@ -418,33 +418,33 @@ module RDI
           setupAppDir do
             setupRegressionUI('RDI::Test::Flows::UIFlows::RegressionUI', 'RDI::Test::Flows::UIFlows::RegressionUI::Directory') do
               # Tune the UI
-              @Installer.accessPlugin('Views', 'RegressionUI') do |ioPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |ioPlugin|
                 ioPlugin.InstallOtherLocation = true
               end
               lInstallDir = "#{@Installer.TempDir}/Regression"
-              @Installer.accessPlugin('LocationSelectors_RegressionUI', 'Directory') do |ioPlugin|
+              @Installer.access_plugin('LocationSelectors_RegressionUI', 'Directory') do |ioPlugin|
                 # Set the directory where we want to install
                 ioPlugin.Directory = lInstallDir
               end
               # Call the installer expecting the GUI to appear
               lDesc = getSimpleDesc
-              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensureDependencies( [ lDesc ], {
-                :PreferredViews => [ 'RegressionUI' ]
+              lError, lCMApplied, lIgnoredDeps, lUnresolvedDeps = @Installer.ensure_dependencies( [ lDesc ], {
+                :preferred_views => [ 'RegressionUI' ]
               } )
               # Check results
               assert_equal(nil, lError)
               assert_equal( [], lIgnoredDeps )
               assert_equal( [], lUnresolvedDeps )
               # Get the plugin back
-              @Installer.accessPlugin('Views', 'RegressionUI') do |iPlugin|
+              @Installer.access_plugin('Views', 'RegressionUI') do |iPlugin|
                 # Check that it was called correctly
                 lCalled = iPlugin.Called
                 # Get the first install destination (this is where it will be installed
                 assert_equal( { 'DummyBinary' => [ [ 'SystemPath', lInstallDir ] ] }, lCMApplied )
               end
               # Check that the dependency is resolved
-              @Installer.accessPlugin('Testers', 'Binaries') do |iPlugin|
-                assert_equal(true, iPlugin.isContentResolved?(['DummyBinary']))
+              @Installer.access_plugin('Testers', 'Binaries') do |iPlugin|
+                assert_equal(true, iPlugin.is_content_resolved?(['DummyBinary']))
               end
             end
           end

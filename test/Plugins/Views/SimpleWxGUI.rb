@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -11,22 +11,23 @@ module RDI
 
       class SimpleWxGUI < RDITestCase
 
-        # TODO: Uncomment this when WxRuby will be usable: this will add tests back
-        #include RDITestCase_Views
+        include RDITestCase_Views if $RDITest_WX_Installed
 
         # Constructor
         def setup
-          super
-          @ViewPluginName = 'SimpleWxGUI'
-          require 'Plugins/WxEnv'
-          RDI::Test::RDIWx.installTestWxEnv
+          if $RDITest_WX_Installed
+            super
+            @ViewPluginName = 'SimpleWxGUI'
+            require 'Plugins/WxEnv'
+            RDI::Test::RDIWx.installTestWxEnv
+          end
         end
 
         # initScenario
         #
-        # Parameters:
+        # Parameters::
         # * *ioPlugin* (_Object_): The View plugin
-        # * *iScenario* (<em>list<[Integer,String,Object]></em>): The scenario
+        # * *iScenario* (<em>list< [Integer,String,Object] ></em>): The scenario
         # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
         def initScenario(ioPlugin, iScenario, iMissingDependencies)
           @Scenario = iScenario
@@ -34,16 +35,16 @@ module RDI
 
         # executeScenario
         #
-        # Parameters:
+        # Parameters::
         # * *ioPlugin* (_Object_): The View plugin
         # * *ioInstaller* (_Installer_): The RDI installer
         # * *iMissingDependencies* (<em>list<DependencyDescription></em>): The missing dependencies list
-        # Return:
+        # Return::
         # * <em>list<DependencyUserChoice></em>: The corresponding user choices
         def executeScenario(ioPlugin, ioInstaller, iMissingDependencies)
           # Modify the constructor of DependenciesLoaderDialog to trap its instance (as Wx::get_app.get_top_window does not work as expected)
           # Load it first to ensure the class will be loaded
-          ioInstaller.accessPlugin('Views', 'SimpleWxGUI') do |iPlugin|
+          ioInstaller.access_plugin('Views', 'SimpleWxGUI') do |iPlugin|
             require 'rdi/Plugins/Views/SimpleWxGUI/DependenciesLoaderDialog'
           end
           if (defined?($RDI_ModifiedDepLoaderDialog) == nil)
@@ -53,7 +54,7 @@ module RDI
 
         # Constructor
         #
-        # Parameters:
+        # Parameters::
         # * *iParent* (<em>Wx::Window</em>): The parent
         # * *ioInstaller* (_Installer_): The installer
         # * *iDepsUserChoices* (<em>list<DependencyUserChoice></em>): The dependency user choices to reflect in this dialog
@@ -132,7 +133,7 @@ module RDI
                       # In case of DEST_OTHER, we must use a different LocationSelector
                       lOtherFound = false
                       lInstallerName, lInstallerContent, lContextModifiers = lDepUserChoice.DepDesc.Installers[lIdxInstaller]
-                      ioInstaller.accessPlugin('Installers', lInstallerName) do |iPlugin|
+                      ioInstaller.access_plugin('Installers', lInstallerName) do |iPlugin|
                         lFlavour, lLocation = iPlugin.PossibleDestinations[lIdxDest]
                         if (lFlavour == DEST_OTHER)
                           setupFakeSelector(lLocation, lOtherLocation) do
@@ -156,7 +157,7 @@ module RDI
                       # TODO (wxRuby): Make Window#find_window_by_label work (little typo)
                       lButton = Wx::Window.find_window_by_label("Change #{lCMName}", lDepPanel)
                       # Change the LocationSelector
-                      ioInstaller.accessPlugin('ContextModifiers', lCMName) do |ioCMPlugin|
+                      ioInstaller.access_plugin('ContextModifiers', lCMName) do |ioCMPlugin|
                         # Get the name of LocationSelector class to use
                         # Setup a fake selector
                         setupFakeSelector(ioCMPlugin.LocationSelectorName, lLocation) do
@@ -164,7 +165,7 @@ module RDI
                         end
                       end
                     else
-                      logBug "Unknown Action: #{iAction}"
+                      log_bug "Unknown Action: #{iAction}"
                     end
                   end
                   # Time between each action: 200 ms
@@ -174,7 +175,7 @@ module RDI
                 sleep(0.2)
               end
             rescue Exception
-              logExc $!, 'Exception while piloting GUI for testing.'
+              log_exc $!, 'Exception while piloting GUI for testing.'
             end
           end
 

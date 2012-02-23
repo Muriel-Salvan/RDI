@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -15,26 +15,26 @@ module RDI
       # Give the name of possible ContextModifiers that might change the resolution of this Tester.
       # This is used to know what context modifiers the user can use to resolve dependencies without having to install.
       #
-      # Return:
+      # Return::
       # * <em>list<String></em>: The list of ContextModifiers names
-      def getAffectingContextModifiers
+      def get_affecting_context_modifiers
         return [ 'SystemPath' ]
       end
 
       # Test if a given content is resolved
       #
-      # Parameters:
+      # Parameters::
       # * *iContent* (_Object_): The tester's content
-      # Return:
+      # Return::
       # * _Boolean_: Is the content resolved ?
-      def isContentResolved?(iContent)
+      def is_content_resolved?(iContent)
         # * *iContent* (<em>list<String></em>): The list of Exes to resolve (extensions might be guessed)
         rSuccess = false
 
         # For each required file, test that it exists among PATH
         iContent.each do |iExeName|
-          $rUtilAnts_Platform_Info.getSystemExePath.each do |iDir|
-            rSuccess = (!Dir.glob(File.expand_path("#{iDir}/#{iExeName}{,#{$rUtilAnts_Platform_Info.getDiscreteExeExtensions.join(',')}}")).empty?)
+          getSystemExePath.each do |iDir|
+            rSuccess = (!Dir.glob(File.expand_path("#{iDir}/#{iExeName}{,#{getDiscreteExeExtensions.join(',')}}")).empty?)
             if (rSuccess)
               # We found it. Don't try other paths.
               break

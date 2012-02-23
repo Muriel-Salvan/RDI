@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -11,7 +11,7 @@ module Gem
 
     # Add a path to the list
     #
-    # Parameters:
+    # Parameters::
     # * *iDirName* (_String_): Directory to add to the list
     def <<(iDirName)
       # Add the path for real in the internals
@@ -31,7 +31,7 @@ module Gem
 
     # Get the list of lib directories accessible through the paths
     #
-    # Return:
+    # Return::
     # * <em>list<String></em>: List of paths
     def getLibDirs
       if ((defined?(@LibDirs) == nil) or
@@ -79,9 +79,9 @@ module Gem
 
   # Return the list of files matching a Ruby require
   #
-  # Parameters:
+  # Parameters::
   # * *iRequireName* (_String_): Name to require
-  # Return:
+  # Return::
   # * <em>list<String></em>: File names list
   def self.find_files(iRequireName)
     rFilesList = []
@@ -109,7 +109,7 @@ module Gem
 
   # Return the list of Gem paths
   #
-  # Return:
+  # Return::
   # * <em>list<String></em>: List of Gem paths
   def self.path
     return $RDI_GemPath_Cache

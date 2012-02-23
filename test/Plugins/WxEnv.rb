@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -20,17 +20,17 @@ module RDI
         lWxRubyInstallLocation = "#{Dir.tmpdir}/RDITest/WxRubyTestInstall"
         if (defined?($RDI_Test_WxApp) == nil)
           require 'rdi/Plugins/WxRubyDepDesc'
-          RDI::Installer.new(lWxRubyInstallLocation).ensureDependencies(
+          RDI::Installer.new(lWxRubyInstallLocation).ensure_dependencies(
             [ ::RDI::getWxRubyDepDesc ],
             {
-              :AutoInstall => DEST_OTHER,
-              :AutoInstallLocation => lWxRubyInstallLocation,
-              :PreferredViews => [ 'Text' ]
+              :auto_install => DEST_OTHER,
+              :auto_install_location => lWxRubyInstallLocation,
+              :preferred_views => [ 'Text' ]
             } )
           # TODO (wxRuby): Re-enable it when WxRuby will be more stable
           GC.disable
           require 'wx'
-          setGUIForDialogs(RUtilAnts::Logging::Logger::GUI_WX)
+          set_gui_for_dialogs(RUtilAnts::Logging::GUI_WX)
           # Create the main application
           require 'Plugins/WxEnvApp'
           $RDI_Test_WxApp = TestApp.new
@@ -45,8 +45,8 @@ module RDI
         else
           # It is already loaded.
           # Add the directory to the Gem path.
-          RDI::Installer.new(lWxRubyInstallLocation).accessPlugin('ContextModifiers', 'GemPath') do |ioPlugin|
-            ioPlugin.addLocationToContext(lWxRubyInstallLocation)
+          RDI::Installer.new(lWxRubyInstallLocation).access_plugin('ContextModifiers', 'GemPath') do |ioPlugin|
+            ioPlugin.add_location_to_context(lWxRubyInstallLocation)
           end
         end
       end
@@ -54,10 +54,10 @@ module RDI
       # Execute some code in the same thread that executes the main Wx loop.
       # This should be used to execute any code dealing with the GUI.
       #
-      # Parameters:
+      # Parameters::
       # * *&iClientCode* (_CodeBlock_): Client code to be called by the main loop thread:
-      # ** _Object_: Return value that will be transferred as the return value of this function
-      # Return:
+      #   * _Object_: Return value that will be transferred as the return value of this function
+      # Return::
       # * _Object_: The return value of the client code
       def self.executeInWxEnv(&iClientCode)
         rResult = nil

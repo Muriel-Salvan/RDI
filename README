@@ -1,6 +1,3 @@
--- This file is best viewed when processed by rdoc.
-++
-
 = RDI: Runtime Dependencies Installer
 
 Library that embeds a dynamic dependencies installer.

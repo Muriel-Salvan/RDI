@@ -348,7 +348,7 @@ module RDI
                 assert_equal(nil, $!)
               end
               # Verify
-              assert verifyInstalledContent(lLocation), "Content installed by installer #{@InstallerPluginName} differs from expected")
+              assert verifyInstalledContent(lLocation), "Content installed by installer #{@InstallerPluginName} differs from expected"
               # Remove
               uninstallTestContent(lLocation)
             end

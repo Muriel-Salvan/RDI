@@ -52,17 +52,22 @@ module RDI
       # Set directories
       @RDILibDir = File.dirname(__FILE__)
       @ExtDir = "#{iAppRootDir}/ext/#{RUBY_PLATFORM}"
+      # Get OS specific locations
+      if (defined?(RUtilAnts::Platform) == nil)
+        require 'rUtilAnts/Platform'
+      end
       # Initialize all other standard directories
-      case RUBY_PLATFORM
-      when 'i386-mswin32', 'i386-mingw32'
+      lOSCode = RUtilAnts::Platform::Manager.new.os
+      case lOSCode
+      when RUtilAnts::Platform::OS_WINDOWS
         @UserRootDir = "#{ENV['USERPROFILE']}/RDI"
         @SystemDir = "#{ENV['SystemRoot']}/RDI"
-      when 'i386-linux', 'i386-cygwin', 'x86_64-linux'
+      when RUtilAnts::Platform::OS_LINUX, RUtilAnts::Platform::OS_CYGWIN, RUtilAnts::Platform::OS_MACOSX
         @UserRootDir = "#{File.expand_path('~')}/RDI"
         @SystemDir = "/usr/local/RDI"
       else
-        log_bug "RDI is not yet compatible with #{RUBY_PLATFORM}. Sorry. Please open a request on http://sourceforge.net/tracker/?group_id=274498&atid=1166451"
-        raise RuntimeError, "Incompatible platform: #{RUBY_PLATFORM}"
+        log_bug "RDI is not yet compatible with #{lOSCode}. Sorry. Please open a request on http://sourceforge.net/tracker/?group_id=274498&atid=1166451"
+        raise RuntimeError, "Incompatible platform: #{lOSCode}"
       end
       require 'tmpdir'
       @TempRootDir = "#{Dir.tmpdir}/RDI"
@@ -245,7 +250,7 @@ module RDI
                   end
                   # This one is to be installed
                   # Get the installer plugin
-                  lInstallerName, lInstallerContent, lContextModifiers = lDepDesc.Installers[iDepUserChoice.IdxInstaller]
+                  lInstallerName, _, _ = lDepDesc.Installers[iDepUserChoice.IdxInstaller]
                   access_plugin('Installers', lInstallerName) do |ioInstallerPlugin|
                     lLocation = nil
                     if (ioInstallerPlugin.PossibleDestinations[iDepUserChoice.IdxDestination][0] == DEST_OTHER)
@@ -299,7 +304,7 @@ module RDI
                 lIdxInstaller = 0
                 lLocation = nil
                 iDepDesc.Installers.each do |iInstallerInfo|
-                  iInstallerName, iInstallerContent, iContextModifiersList = iInstallerInfo
+                  iInstallerName, _, _ = iInstallerInfo
                   access_plugin('Installers', iInstallerName) do |iPlugin|
                     iPlugin.PossibleDestinations.each do |iDestinationInfo|
                       iLocationFlavour, iLocation = iDestinationInfo
@@ -581,7 +586,7 @@ module RDI
         # Now we try to select 1 view that is accessible without any dependency installation
         lPlugin = nil
         lViewsList.each do |iViewName|
-          lPlugin, lError = @Plugins.get_plugin_instance('Views', iViewName,
+          lPlugin, _ = @Plugins.get_plugin_instance('Views', iViewName,
             :OnlyIfExtDepsResolved => true,
             :RDIInstaller => self
           )
@@ -594,7 +599,7 @@ module RDI
         if (lPlugin == nil)
           # Now we try to install them
           lViewsList.each do |iViewName|
-            lPlugin, lError = @Plugins.get_plugin_instance('Views', iViewName,
+            lPlugin, _ = @Plugins.get_plugin_instance('Views', iViewName,
               :RDIInstaller => self
             )
             if (lPlugin != nil)
@@ -636,7 +641,7 @@ module RDI
         # Now we try to select 1 progress view that is accessible without any dependency installation
         lPlugin = nil
         lViewsList.each do |iViewName|
-          lPlugin, lError = @Plugins.get_plugin_instance('ProgressViews', iViewName,
+          lPlugin, _ = @Plugins.get_plugin_instance('ProgressViews', iViewName,
             :OnlyIfExtDepsResolved => true,
             :RDIInstaller => self
           )
@@ -649,7 +654,7 @@ module RDI
         if (lPlugin == nil)
           # Now we try to install them
           lViewsList.each do |iViewName|
-            lPlugin, lError = @Plugins.get_plugin_instance('ProgressViews', iViewName,
+            lPlugin, _ = @Plugins.get_plugin_instance('ProgressViews', iViewName,
               :RDIInstaller => self
             )
             if (lPlugin != nil)

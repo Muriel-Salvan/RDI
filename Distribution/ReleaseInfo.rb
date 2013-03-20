@@ -5,27 +5,27 @@
 
 RubyPackager::ReleaseInfo.new.
   author(
-    :Name => 'Muriel Salvan',
-    :EMail => 'muriel@x-aeon.com',
-    :WebPageURL => 'http://murielsalvan.users.sourceforge.net'
+    :name => 'Muriel Salvan',
+    :email => 'muriel@x-aeon.com',
+    :web_page_url => 'http://murielsalvan.users.sourceforge.net'
   ).
   project(
-    :Name => 'RDI: Runtime Dependencies Installer',
-    :WebPageURL => 'http://rdi.sourceforge.net/',
-    :Summary => 'Library allowing applications to ensure their dependencies at runtime with UI support.',
-    :Description => 'RDI is a library that gives your application the ability to install its dependencies at runtime. Perfect for plugins oriented architectures. Many kind of deps: RPMs, DEBs, .so, .dll, RubyGems... Easily extensible to new kinds.',
-    :ImageURL => 'http://rdi.sourceforge.net/wiki/images/c/c9/Logo.png',
-    :FaviconURL => 'http://rdi.sourceforge.net/wiki/images/2/26/Favicon.png',
-    :SVNBrowseURL => 'http://rdi.svn.sourceforge.net/viewvc/rdi/',
-    :DevStatus => 'Alpha'
+    :name => 'RDI: Runtime Dependencies Installer',
+    :web_page_url => 'http://rdi.sourceforge.net/',
+    :summary => 'Library allowing applications to ensure their dependencies at runtime with UI support.',
+    :description => 'RDI is a library that gives your application the ability to install its dependencies at runtime. Perfect for plugins oriented architectures. Many kind of deps: RPMs, DEBs, .so, .dll, RubyGems... Easily extensible to new kinds.',
+    :image_url => 'http://rdi.sourceforge.net/wiki/images/c/c9/Logo.png',
+    :favicon_url => 'http://rdi.sourceforge.net/wiki/images/2/26/Favicon.png',
+    :browse_source_url => 'http://rdi.svn.sourceforge.net/viewvc/rdi/',
+    :dev_status => 'Alpha'
   ).
-  addCoreFiles( [
+  add_core_files( [
     'lib/**/*'
   ] ).
-  addTestFiles( [
+  add_test_files( [
     'test/**/*'
   ] ).
-  addAdditionalFiles( [
+  add_additional_files( [
     'README',
     'LICENSE',
     'AUTHORS',
@@ -33,19 +33,19 @@ RubyPackager::ReleaseInfo.new.
     'ChangeLog'
   ] ).
   gem(
-    :GemName => 'RDI',
-    :GemPlatformClassName => 'Gem::Platform::RUBY',
-    :RequirePath => 'lib',
-    :HasRDoc => true,
-    :TestFile => 'test/run.rb',
-    :GemDependencies => [
+    :gem_name => 'RDI',
+    :gem_platform_class_name => 'Gem::Platform::RUBY',
+    :require_path => 'lib',
+    :has_rdoc => true,
+    :test_file => 'test/run.rb',
+    :gem_dependencies => [
       [ 'rUtilAnts', '>= 0.1' ]
     ]
   ).
-  sourceForge(
-    :Login => 'murielsalvan',
-    :ProjectUnixName => 'rdi'
+  source_forge(
+    :login => 'murielsalvan',
+    :project_unix_name => 'rdi'
   ).
-  rubyForge(
-    :ProjectUnixName => 'rdi'
+  ruby_forge(
+    :project_unix_name => 'rdi'
   )

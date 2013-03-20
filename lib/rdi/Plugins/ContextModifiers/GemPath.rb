@@ -75,8 +75,6 @@ module RDI
       def add_location_to_context(iLocation)
         # * *iLocation* (_String_): Directory
         Gem.path << iLocation
-        # TODO (RubyGems): Make the extra source_index modification useless. Adding to path should reflect changes internally.
-        Gem.source_index.spec_dirs << "#{iLocation}/specifications"
         Gem.refresh
       end
 
@@ -92,8 +90,6 @@ module RDI
           if ((iLastDir != iLocation) and
               (!Gem.path.include?(iLastDir)))
             Gem.path << iLastDir
-            # TODO (RubyGems): Make the extra source_index modification useless. Adding to path should reflect changes internally.
-            Gem.source_index.spec_dirs << "#{iLastDir}/specifications"
           end
         end
         Gem.refresh

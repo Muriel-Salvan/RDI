@@ -293,6 +293,26 @@ module RDI
     #  getOtherLocation
     module RDITestCase_Installers
 
+      # Test whether a directory is writable for our tests
+      #
+      # Parameters:
+      # * *iDir* (_String_): Directory to test
+      # Return:
+      # * _Boolean_: Is directory writeable ?
+      def isLocationRW?(iDir)
+        rOK = true
+
+        lFileName = "#{iDir}/__RDITESTFILE__DELETE_ME__"
+        begin
+          FileUtils::touch(lFileName)
+          File.unlink(lFileName)
+        rescue Exception
+          rOK = false
+        end
+
+        return rOK
+      end
+
       # Test that the API is correctly defined
       def testAPI
         setupAppDir do
@@ -332,25 +352,29 @@ module RDI
             # Test installation on every possible location
             ioPlugin.get_possible_destinations.each do |iDestination|
               iFlavour, iLocation = iDestination
-              # Use a temporary location if needed
-              lLocation = (iFlavour == DEST_OTHER) ? getOtherLocation : iLocation
-              assert_equal(false, verifyInstalledContent(lLocation))
-              # Protect from exceptions, to ensure that test content will be uninstalled
-              begin
-                # Install the test content
-                lError = ioPlugin.install_dependency(lContent, lLocation)
-                if (lError != nil)
-                  log_err "Error encountered while installing using #{@InstallerPluginName}: #{lError}\n#{lError.backtrace.join("\n")}"
-                  assert false
+              # Test first that SYSTEM locations are accessible for our tests
+              if ((iFlavour != DEST_SYSTEM) or
+                  isLocationRW?(iLocation))
+                # Use a temporary location if needed
+                lLocation = (iFlavour == DEST_OTHER) ? getOtherLocation : iLocation
+                assert_equal(false, verifyInstalledContent(lLocation))
+                # Protect from exceptions, to ensure that test content will be uninstalled
+                begin
+                  # Install the test content
+                  lError = ioPlugin.install_dependency(lContent, lLocation)
+                  if (lError != nil)
+                    log_err "Error encountered while installing using #{@InstallerPluginName}: #{lError}\n#{lError.backtrace.join("\n")}"
+                    assert false
+                  end
+                rescue Exception
+                  # Log the exception for it to be seen
+                  assert_equal(nil, $!)
                 end
-              rescue Exception
-                # Log the exception for it to be seen
-                assert_equal(nil, $!)
+                # Verify
+                assert verifyInstalledContent(lLocation), "Content installed by installer #{@InstallerPluginName} differs from expected"
+                # Remove
+                uninstallTestContent(lLocation)
               end
-              # Verify
-              assert verifyInstalledContent(lLocation), "Content installed by installer #{@InstallerPluginName} differs from expected"
-              # Remove
-              uninstallTestContent(lLocation)
             end
           end
         end
